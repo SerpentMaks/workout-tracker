@@ -24,31 +24,24 @@
       selectedDate = dateStr;
     },
 
-    // Global Stats Calculation
+    // Global Stats Calculation (Focus on Workouts and Sets)
     getGlobalStats: function () {
       const history = window.BentoStorage.getHistory();
       const settings = window.BentoStorage.getSettings();
-      const unit = settings.unit || 'kg';
 
       const totalWorkouts = history.length;
-      let totalKgTonnage = 0;
+      let totalCompletedSets = 0;
       let lastWorkout = history.length > 0 ? history[0] : null;
 
       history.forEach((w) => {
-        if (w.totalTonnage) {
-          totalKgTonnage += w.totalTonnage;
+        if (w.completedSets) {
+          totalCompletedSets += w.completedSets;
         } else if (w.exercises) {
-          let wTon = 0;
           w.exercises.forEach((ex) => {
             if (ex.sets) {
-              ex.sets.forEach((s) => {
-                if (s.completed && s.weight && s.reps) {
-                  wTon += s.weight * s.reps;
-                }
-              });
+              totalCompletedSets += ex.sets.filter((s) => s.completed).length;
             }
           });
-          totalKgTonnage += wTon;
         }
       });
 
@@ -72,14 +65,9 @@
       const weeklyGoal = settings.weeklyGoal || 3;
       const weeklyPercent = Math.min(100, Math.round((weeklyCompleted / weeklyGoal) * 100));
 
-      const displayTonnage = unit === 'lbs'
-        ? Math.round(totalKgTonnage * 2.20462)
-        : Math.round(totalKgTonnage);
-
       return {
         totalWorkouts,
-        totalTonnage: displayTonnage,
-        unit,
+        totalCompletedSets,
         weeklyCompleted,
         weeklyGoal,
         weeklyPercent,
@@ -128,24 +116,24 @@
       const todayStr = new Date().toISOString().split('T')[0];
 
       let html = `
-        <div class=\"cal-header\">
-          <button class=\"cal-nav-btn\" id=\"cal-prev-btn\" aria-label=\"Предыдущий месяц\">
-            <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><polyline points=\"15 18 9 12 15 6\"/></svg>
+        <div class="cal-header">
+          <button class="cal-nav-btn" id="cal-prev-btn" aria-label="Предыдущий месяц">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
-          <span class=\"cal-title\">${monthNames[calendarMonth]} ${calendarYear}</span>
-          <button class=\"cal-nav-btn\" id=\"cal-next-btn\" aria-label=\"Следующий месяц\">
-            <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><polyline points=\"9 18 15 12 9 6\"/></svg>
+          <span class="cal-title">${monthNames[calendarMonth]} ${calendarYear}</span>
+          <button class="cal-nav-btn" id="cal-next-btn" aria-label="Следующий месяц">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
-        <div class=\"cal-weekdays\">
+        <div class="cal-weekdays">
           <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
         </div>
-        <div class=\"cal-grid\">
+        <div class="cal-grid">
       `;
 
       // Empty padding days
       for (let i = 0; i < startDayOfWeek; i++) {
-        html += `<div class=\"cal-day empty\"></div>`;
+        html += `<div class="cal-day empty"></div>`;
       }
 
       // Days of month
@@ -164,9 +152,9 @@
         if (hasWorkouts) classes.push('has-workout');
 
         html += `
-          <button class=\"${classes.join(' ')}\" data-date=\"${fullDateStr}\">
-            <span class=\"cal-day-num\">${day}</span>
-            ${hasWorkouts ? '<span class=\"cal-dot\"></span>' : ''}
+          <button class="${classes.join(' ')}" data-date="${fullDateStr}">
+            <span class="cal-day-num">${day}</span>
+            ${hasWorkouts ? '<span class="cal-dot"></span>' : ''}
           </button>
         `;
       }

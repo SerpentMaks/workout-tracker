@@ -15,6 +15,9 @@
 
   window.BentoApp = {
     init: function () {
+      this.updateAppHeight();
+      window.addEventListener('resize', () => this.updateAppHeight());
+      window.addEventListener('orientationchange', () => this.updateAppHeight());
       this.applySavedThemeAndAccent();
       this.bindTabNavigation();
       this.bindHeaderActions();
@@ -39,10 +42,14 @@
       this.renderAnalytics();
       this.renderProfile();
 
-      // If active workout was ongoing and screen is desired, we can minimize or resume
       if (AppState.activeWorkout) {
         this.showToast('Возобновлена активная тренировка', 'info');
       }
+    },
+
+    updateAppHeight: function () {
+      const vh = window.innerHeight;
+      document.documentElement.style.setProperty('--app-height', vh + 'px');
     },
 
     // ----------------------------------------------------
@@ -70,7 +77,6 @@
         unitLabel.textContent = (settings.unit || 'kg').toUpperCase();
       }
 
-      // Update unit labels across UI
       document.querySelectorAll('.unit-label').forEach((el) => {
         el.textContent = settings.unit || 'kg';
       });
@@ -103,7 +109,6 @@
     setAccentColor: function (accentName) {
       window.BentoStorage.saveSettings({ accent: accentName });
       this.applySavedThemeAndAccent();
-      // Update accent circle buttons
       document.querySelectorAll('.accent-color-circle').forEach((btn) => {
         btn.classList.toggle('active', btn.getAttribute('data-accent') === accentName);
       });
@@ -147,7 +152,6 @@
         panel.classList.toggle('active', panel.id === `view-${tabId}`);
       });
 
-      // Refresh data on tab switch
       if (tabId === 'home') this.renderHomeBento();
       else if (tabId === 'templates') this.renderTemplates();
       else if (tabId === 'exercises') this.renderExercises();
@@ -186,7 +190,6 @@
         latestWeightStr = `${converted} ${unit}`;
       }
 
-      // Format today's date in Russian
       const now = new Date();
       const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
       const dateStrRaw = now.toLocaleDateString('ru-RU', dateOptions);
@@ -198,7 +201,7 @@
       if (AppState.activeWorkout) {
         const totalSets = this.countTotalSets(AppState.activeWorkout);
         const compSets = this.countCompletedSets(AppState.activeWorkout);
-        const tonnage = this.calculateTonnage(AppState.activeWorkout, unit);
+        const exCount = AppState.activeWorkout.exercises ? AppState.activeWorkout.exercises.length : 0;
 
         html += `
           <div class="bento-card bento-active-card clickable" id="home-resume-workout-card">
@@ -212,7 +215,7 @@
             </div>
             <div class="bento-card-title">${AppState.activeWorkout.title}</div>
             <div class="bento-card-subtitle" style="margin-bottom: 12px;">
-              Завершено сетов: <strong>${compSets}/${totalSets}</strong> • Объём: <strong>${tonnage} ${unit}</strong>
+              Завершено сетов: <strong>${compSets}/${totalSets}</strong> • Упражнений: <strong>${exCount}</strong>
             </div>
             <button class="btn btn-primary btn-sm btn-block" style="background:#10b981; border:none; box-shadow: 0 4px 14px rgba(16,185,129,0.4);" id="btn-home-resume">
               Возобновить тренировку
@@ -234,7 +237,7 @@
             </div>
             <div class="bento-card-title" style="font-size: 20px;">${scheduleInfo.template.name}</div>
             <div class="bento-card-subtitle">
-              ${scheduleInfo.template.exercises.length} упражнений • ${scheduleInfo.template.description || 'Силовая сессия'}
+              ${scheduleInfo.template.exercises.length} упражнений • ${scheduleInfo.template.description || 'Силовая тренировка'}
             </div>
             <button class="btn btn-primary btn-block bento-hero-btn" id="btn-start-scheduled-workout" data-template-id="${scheduleInfo.template.id}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -243,7 +246,6 @@
           </div>
         `;
       } else {
-        // Rest Day Tile
         html += `
           <div class="bento-card bento-hero-card">
             <div class="bento-hero-top">
@@ -286,38 +288,37 @@
         </div>
       `;
 
-      // TILE D: Total Volume (Tonnage)
+      // TILE D: Total Workouts Count
       html += `
         <div class="bento-card bento-col-1">
           <div class="bento-card-header">
-            <span class="bento-card-tag">Объём</span>
-            <div class="bento-card-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/></svg>
-            </div>
-          </div>
-          <div class="bento-stat-num">${stats.totalTonnage.toLocaleString()} <span class="bento-stat-unit">${unit}</span></div>
-          <div class="bento-card-subtitle">Суммарный тоннаж</div>
-        </div>
-      `;
-
-      // TILE E: Total Workouts Count
-      html += `
-        <div class="bento-card bento-col-1">
-          <div class="bento-card-header">
-            <span class="bento-card-tag">Сессии</span>
+            <span class="bento-card-tag">Тренировки</span>
             <div class="bento-card-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
           </div>
           <div class="bento-stat-num">${stats.totalWorkouts}</div>
-          <div class="bento-card-subtitle">Всего тренировок</div>
+          <div class="bento-card-subtitle">Всего завершено</div>
+        </div>
+      `;
+
+      // TILE E: Total Completed Sets Count
+      html += `
+        <div class="bento-card bento-col-1">
+          <div class="bento-card-header">
+            <span class="bento-card-tag">Подходы</span>
+            <div class="bento-card-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div class="bento-stat-num">${stats.totalCompletedSets}</div>
+          <div class="bento-card-subtitle">Выполнено сетов</div>
         </div>
       `;
 
       // TILE F: Last Workout Summary
       if (stats.lastWorkout) {
         const lastDate = new Date(stats.lastWorkout.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-        const lastVol = window.BentoStorage.convertWeight(stats.lastWorkout.totalTonnage || 0, unit);
         html += `
           <div class="bento-card bento-col-1 clickable" id="home-last-workout-card" data-workout-id="${stats.lastWorkout.id}">
             <div class="bento-card-header">
@@ -330,7 +331,7 @@
               ${stats.lastWorkout.title}
             </div>
             <div class="bento-card-subtitle" style="margin-top: 4px;">
-              ${lastDate} • <strong>${lastVol} ${unit}</strong>
+              ${lastDate} • <strong>${stats.lastWorkout.completedSets || 0} сетов</strong>
             </div>
           </div>
         `;
@@ -340,7 +341,7 @@
             <div class="bento-card-header">
               <span class="bento-card-tag">Прошлая</span>
             </div>
-            <div class="bento-card-subtitle">Нет записей</div>
+            <div class="bento-card-subtitle">Пока нет записей</div>
           </div>
         `;
       }
@@ -359,7 +360,7 @@
         </div>
       `;
 
-      // TILE H: Quick Action Buttons (Row of 3 Bento Tiles)
+      // TILE H: Quick Action Buttons
       html += `
         <div class="bento-action-tile bento-col-2" id="btn-home-quick-free">
           <div class="bento-action-tile-icon">
@@ -440,10 +441,7 @@
       const scheduleConfig = window.BentoStorage.getSchedule();
       const scheduleInfo = window.BentoSchedule.getTodaySchedule();
       const templates = window.BentoStorage.getTemplates();
-      const settings = window.BentoStorage.getSettings();
-      const unit = settings.unit || 'kg';
 
-      // Render Schedule Banner
       if (scheduleContainer) {
         const seqNames = (scheduleConfig.sequence || []).map((id) => {
           if (id === 'REST') return 'Отдых';
@@ -478,7 +476,6 @@
         }
       }
 
-      // Render Template Cards List
       if (templates.length === 0) {
         listContainer.innerHTML = `
           <div style="text-align: center; padding: 30px 20px; color: var(--text-tertiary);">
@@ -519,7 +516,6 @@
         `;
       }).join('');
 
-      // Event listeners for templates
       listContainer.querySelectorAll('.btn-start-tpl').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -602,7 +598,7 @@
         return `
           <div class="catalog-item-card" data-ex-id="${ex.id}">
             <div class="catalog-item-svg">
-              ${ex.svgIcon || '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="var(--accent)"/></svg>'}
+              ${ex.svgIcon || ''}
             </div>
             <div class="catalog-item-info">
               <div class="catalog-item-name">${ex.name}</div>
@@ -616,7 +612,6 @@
         `;
       }).join('');
 
-      // Add click handlers
       container.querySelectorAll('.catalog-item-card').forEach((card) => {
         card.addEventListener('click', () => {
           const exId = card.getAttribute('data-ex-id');
@@ -626,7 +621,6 @@
     },
 
     bindExerciseCatalog: function () {
-      // Search Input
       const searchInput = document.getElementById('exercise-search-input');
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -635,7 +629,6 @@
         });
       }
 
-      // Muscle Filter Segmented Control
       const filterControl = document.getElementById('muscle-filter-control');
       if (filterControl) {
         filterControl.querySelectorAll('.segment-item').forEach((btn) => {
@@ -648,7 +641,6 @@
         });
       }
 
-      // Create Custom Exercise
       const btnCreateEx = document.getElementById('btn-create-exercise');
       if (btnCreateEx) {
         btnCreateEx.addEventListener('click', () => this.openCustomExerciseModal());
@@ -664,7 +656,6 @@
         btnSaveCustomEx.addEventListener('click', () => this.saveCustomExercise());
       }
 
-      // Exercise Detail Modal Close
       const btnCloseExDetail = document.getElementById('btn-close-exercise-detail');
       if (btnCloseExDetail) {
         btnCloseExDetail.addEventListener('click', () => {
@@ -672,7 +663,6 @@
         });
       }
 
-      // Exercise History Modal Close
       const btnCloseExHistory = document.getElementById('btn-close-ex-history');
       if (btnCloseExHistory) {
         btnCloseExHistory.addEventListener('click', () => {
@@ -680,7 +670,6 @@
         });
       }
 
-      // Export & Import Exercises
       const btnExport = document.getElementById('btn-export-exercises');
       if (btnExport) {
         btnExport.addEventListener('click', () => {
@@ -724,9 +713,8 @@
       const inst = ex.instructions || {};
       const musclesList = (ex.targetMuscles || []).map((m) => `<span class="category-tag">${m}</span>`).join(' ');
 
-      // Past performance
       const lastPerf = window.BentoStorage.getLastPerformanceForExercise(exId);
-      let pastPerfHtml = '<div style="font-size: 13px; color: var(--text-tertiary);">Пока нет записей выполнения</div>';
+      let pastPerfHtml = '<div style="font-size: 13px; color: var(--text-tertiary);">Пока нет выполненных подходов</div>';
       if (lastPerf && lastPerf.bestSet) {
         const perfDate = new Date(lastPerf.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
         pastPerfHtml = `
@@ -738,10 +726,8 @@
       }
 
       body.innerHTML = `
-        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
-          <div style="width: 140px; height: 140px; border-radius: var(--radius-lg); background: var(--accent-subtle); padding: 12px; display: flex; align-items: center; justify-content: center;">
-            ${ex.svgIcon || ''}
-          </div>
+        <div class="exercise-modal-svg-box">
+          ${ex.svgIcon || ''}
         </div>
 
         <div style="margin-bottom: 14px;">
@@ -906,7 +892,6 @@
         const exObj = window.BentoStorage.getExerciseById(item.exerciseId);
         const lastPerf = window.BentoStorage.getLastPerformanceForExercise(item.exerciseId);
 
-        // Prepopulate sets
         const setsCount = item.targetSets || 3;
         const sets = [];
         for (let i = 1; i <= setsCount; i++) {
@@ -1045,18 +1030,16 @@
 
     updateActiveWorkoutMetricsTicker: function () {
       if (!AppState.activeWorkout) return;
-      const settings = window.BentoStorage.getSettings();
-      const unit = settings.unit || 'kg';
 
       const totalSets = this.countTotalSets(AppState.activeWorkout);
       const compSets = this.countCompletedSets(AppState.activeWorkout);
-      const tonnage = this.calculateTonnage(AppState.activeWorkout, unit);
+      const exCount = AppState.activeWorkout.exercises ? AppState.activeWorkout.exercises.length : 0;
 
       const setsTicker = document.getElementById('workout-sets-ticker');
       if (setsTicker) setsTicker.textContent = `${compSets} / ${totalSets}`;
 
-      const tonTicker = document.getElementById('workout-tonnage-ticker');
-      if (tonTicker) tonTicker.textContent = `${tonnage} ${unit}`;
+      const exTicker = document.getElementById('workout-exercises-ticker');
+      if (exTicker) exTicker.textContent = `${exCount}`;
     },
 
     renderActiveWorkoutSets: function () {
@@ -1175,7 +1158,6 @@
         `;
       }).join('');
 
-      // Bind Inputs & Checkboxes
       container.querySelectorAll('.set-weight-input').forEach((input) => {
         input.addEventListener('change', (e) => {
           const exIdx = parseInt(e.target.getAttribute('data-ex-idx'));
@@ -1198,7 +1180,6 @@
         });
       });
 
-      // Set Checkbox Click
       container.querySelectorAll('.set-check-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const exIdx = parseInt(btn.getAttribute('data-ex-idx'));
@@ -1219,14 +1200,12 @@
             window.BentoFeedback.playSetCompleteClick();
             window.BentoFeedback.hapticSetCheck();
 
-            // Auto-trigger Rest Timer!
             const settings = window.BentoStorage.getSettings();
             window.BentoTimer.start(settings.defaultRestSeconds || 90);
           }
         });
       });
 
-      // Add Set to Exercise
       container.querySelectorAll('.btn-add-set').forEach((btn) => {
         btn.addEventListener('click', () => {
           const exIdx = parseInt(btn.getAttribute('data-ex-idx'));
@@ -1247,7 +1226,6 @@
         });
       });
 
-      // Remove last set
       AppState.activeWorkout.exercises.forEach((ex, exIdx) => {
         const btnRemove = document.getElementById(`btn-remove-last-set-${exIdx}`);
         if (btnRemove) {
@@ -1262,7 +1240,6 @@
         }
       });
 
-      // Quick Technique Info Modal from Active Workout
       container.querySelectorAll('.btn-ex-tech').forEach((btn) => {
         btn.addEventListener('click', () => {
           const exId = btn.getAttribute('data-ex-id');
@@ -1270,7 +1247,6 @@
         });
       });
 
-      // Quick History Modal from Active Workout
       container.querySelectorAll('.btn-ex-hist').forEach((btn) => {
         btn.addEventListener('click', () => {
           const exId = btn.getAttribute('data-ex-id');
@@ -1278,7 +1254,6 @@
         });
       });
 
-      // Remove Exercise from workout
       container.querySelectorAll('.btn-ex-remove').forEach((btn) => {
         btn.addEventListener('click', () => {
           const exIdx = parseInt(btn.getAttribute('data-ex-idx'));
@@ -1293,7 +1268,6 @@
     },
 
     bindActiveWorkout: function () {
-      // Title edit
       const titleInput = document.getElementById('workout-title-input');
       if (titleInput) {
         titleInput.addEventListener('input', (e) => {
@@ -1304,25 +1278,21 @@
         });
       }
 
-      // Minimize button
       const btnMinimize = document.getElementById('btn-minimize-workout');
       if (btnMinimize) {
         btnMinimize.addEventListener('click', () => this.minimizeActiveWorkoutScreen());
       }
 
-      // Finish workout button
       const btnFinish = document.getElementById('btn-finish-workout');
       if (btnFinish) {
         btnFinish.addEventListener('click', () => this.openFinishConfirmationModal());
       }
 
-      // Add exercise to active workout
       const btnAddEx = document.getElementById('btn-workout-add-exercise');
       if (btnAddEx) {
         btnAddEx.addEventListener('click', () => this.openExercisePickerModal());
       }
 
-      // Cancel workout
       const btnCancel = document.getElementById('btn-workout-cancel');
       if (btnCancel) {
         btnCancel.addEventListener('click', () => {
@@ -1332,7 +1302,6 @@
         });
       }
 
-      // Finish dialog buttons
       const btnCloseFinish = document.getElementById('btn-close-finish-dialog');
       if (btnCloseFinish) {
         btnCloseFinish.addEventListener('click', () => {
@@ -1350,7 +1319,6 @@
         btnConfirmFinish.addEventListener('click', () => this.commitFinishWorkout());
       }
 
-      // Exercise Picker Modal
       const btnClosePicker = document.getElementById('btn-close-exercise-picker');
       if (btnClosePicker) {
         btnClosePicker.addEventListener('click', () => {
@@ -1440,31 +1408,24 @@
 
     openFinishConfirmationModal: function () {
       if (!AppState.activeWorkout) return;
-      const settings = window.BentoStorage.getSettings();
-      const unit = settings.unit || 'kg';
 
       const durStr = this.formatDuration(AppState.activeWorkout.elapsedSeconds || 0);
       const compSets = this.countCompletedSets(AppState.activeWorkout);
       const totalSets = this.countTotalSets(AppState.activeWorkout);
-      const tonnage = this.calculateTonnage(AppState.activeWorkout, unit);
+      const exCount = AppState.activeWorkout.exercises ? AppState.activeWorkout.exercises.length : 0;
 
       document.getElementById('finish-modal-duration').textContent = durStr;
       document.getElementById('finish-modal-sets').textContent = `${compSets} из ${totalSets}`;
-      document.getElementById('finish-modal-tonnage').textContent = `${tonnage} ${unit}`;
+      document.getElementById('finish-modal-exercises').textContent = `${exCount}`;
 
       document.getElementById('workout-finish-modal').classList.remove('hidden');
     },
 
     commitFinishWorkout: function () {
       if (!AppState.activeWorkout) return;
-      const settings = window.BentoStorage.getSettings();
-      const unit = settings.unit || 'kg';
 
       const compSets = this.countCompletedSets(AppState.activeWorkout);
       const totalSets = this.countTotalSets(AppState.activeWorkout);
-      const tonnage = this.calculateTonnage(AppState.activeWorkout, unit);
-      // convert to kg for global database storage consistency
-      const tonnageInKg = window.BentoStorage.toKg(tonnage, unit);
 
       const workoutRecord = {
         id: 'hist_' + Date.now(),
@@ -1472,7 +1433,6 @@
         templateId: AppState.activeWorkout.templateId,
         date: new Date().toISOString(),
         durationSeconds: AppState.activeWorkout.elapsedSeconds || 60,
-        totalTonnage: Math.round(tonnageInKg),
         totalSets: totalSets,
         completedSets: compSets,
         exercises: JSON.parse(JSON.stringify(AppState.activeWorkout.exercises)),
@@ -1509,21 +1469,6 @@
         if (!ex.sets) return sum;
         return sum + ex.sets.filter((s) => s.completed).length;
       }, 0);
-    },
-
-    calculateTonnage: function (workout, unit) {
-      if (!workout || !workout.exercises) return 0;
-      let total = 0;
-      workout.exercises.forEach((ex) => {
-        if (ex.sets) {
-          ex.sets.forEach((s) => {
-            if (s.completed && s.weight && s.reps) {
-              total += s.weight * s.reps;
-            }
-          });
-        }
-      });
-      return Math.round(total);
     },
 
     formatDuration: function (totalSec) {
@@ -1610,7 +1555,6 @@
       if (calWrap) {
         calWrap.innerHTML = window.BentoAnalytics.renderCalendarHTML();
 
-        // Bind Calendar Nav
         const btnPrev = document.getElementById('cal-prev-btn');
         if (btnPrev) {
           btnPrev.addEventListener('click', () => {
@@ -1626,7 +1570,6 @@
           });
         }
 
-        // Bind Day clicks
         calWrap.querySelectorAll('.cal-day').forEach((btn) => {
           btn.addEventListener('click', () => {
             const dateStr = btn.getAttribute('data-date');
@@ -1642,19 +1585,17 @@
       const statsBento = document.getElementById('analytics-stats-bento');
       if (statsBento) {
         const stats = window.BentoAnalytics.getGlobalStats();
-        const settings = window.BentoStorage.getSettings();
-        const unit = settings.unit || 'kg';
 
         statsBento.innerHTML = `
           <div class="bento-card bento-col-1">
-            <span class="bento-card-tag">Всего сессий</span>
+            <span class="bento-card-tag">Тренировки</span>
             <div class="bento-stat-num">${stats.totalWorkouts}</div>
-            <div class="bento-card-subtitle">В дневнике</div>
+            <div class="bento-card-subtitle">Всего проведено</div>
           </div>
           <div class="bento-card bento-col-1">
-            <span class="bento-card-tag">Общий тоннаж</span>
-            <div class="bento-stat-num">${stats.totalTonnage.toLocaleString()} <span class="bento-stat-unit">${unit}</span></div>
-            <div class="bento-card-subtitle">Поднято веса</div>
+            <span class="bento-card-tag">Подходы</span>
+            <div class="bento-stat-num">${stats.totalCompletedSets}</div>
+            <div class="bento-card-subtitle">Выполнено сетов</div>
           </div>
         `;
       }
@@ -1663,18 +1604,16 @@
       const historyList = document.getElementById('analytics-history-list');
       if (historyList) {
         const history = window.BentoStorage.getHistory();
-        const settings = window.BentoStorage.getSettings();
-        const unit = settings.unit || 'kg';
 
         if (history.length === 0) {
-          historyList.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-tertiary);">Дневник пуст. Проведите первую тренировку!</div>`;
+          historyList.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-tertiary);">Дневник пока пуст. Проведите первую тренировку!</div>`;
           return;
         }
 
         historyList.innerHTML = history.map((w) => {
           const dStr = new Date(w.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
           const durStr = this.formatDuration(w.durationSeconds || 0);
-          const vol = window.BentoStorage.convertWeight(w.totalTonnage || 0, unit);
+          const exCount = w.exercises ? w.exercises.length : 0;
 
           return `
             <div class="history-item-card" data-workout-id="${w.id}">
@@ -1685,7 +1624,7 @@
               <div class="history-card-metrics">
                 <span>Время: <strong>${durStr}</strong></span>
                 <span>Подходы: <strong>${w.completedSets || w.totalSets || 0}</strong></span>
-                <span>Объём: <strong>${vol} ${unit}</strong></span>
+                <span>Упражнений: <strong>${exCount}</strong></span>
               </div>
             </div>
           `;
@@ -1705,8 +1644,6 @@
       if (!box) return;
 
       const sessions = window.BentoAnalytics.getWorkoutsForDate(dateStr);
-      const settings = window.BentoStorage.getSettings();
-      const unit = settings.unit || 'kg';
 
       if (sessions.length === 0) {
         box.innerHTML = `
@@ -1729,7 +1666,7 @@
             </div>
             <div class="history-card-metrics">
               <span>Подходы: <strong>${s.completedSets || 0}</strong></span>
-              <span>Объём: <strong>${window.BentoStorage.convertWeight(s.totalTonnage || 0, unit)} ${unit}</strong></span>
+              <span>Упражнений: <strong>${s.exercises ? s.exercises.length : 0}</strong></span>
             </div>
           </div>
         `).join('')}
@@ -1766,7 +1703,7 @@
       title.textContent = workout.title;
       const dStr = new Date(workout.date).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
       const durStr = this.formatDuration(workout.durationSeconds || 0);
-      const vol = window.BentoStorage.convertWeight(workout.totalTonnage || 0, unit);
+      const exCount = workout.exercises ? workout.exercises.length : 0;
 
       let exBreakdown = '';
       if (workout.exercises && workout.exercises.length > 0) {
@@ -1807,8 +1744,8 @@
             <div style="font-size: 16px; font-weight: 800;">${workout.completedSets || 0}/${workout.totalSets || 0}</div>
           </div>
           <div>
-            <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">ОБЪЁМ</div>
-            <div style="font-size: 16px; font-weight: 800;">${vol} ${unit}</div>
+            <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">УПРАЖНЕНИЙ</div>
+            <div style="font-size: 16px; font-weight: 800;">${exCount}</div>
           </div>
         </div>
 
@@ -1831,7 +1768,6 @@
       const settings = window.BentoStorage.getSettings();
       const unit = settings.unit || 'kg';
 
-      // Current Weight & BMI
       let currentWeightKg = 0;
       let weightDisplay = '--';
       if (metrics.logs && metrics.logs.length > 0) {
@@ -1858,7 +1794,6 @@
         }
       }
 
-      // Weight logs list
       const logsContainer = document.getElementById('profile-weight-history-list');
       if (logsContainer) {
         if (!metrics.logs || metrics.logs.length === 0) {
@@ -1889,7 +1824,6 @@
         }
       }
 
-      // Settings Controls State
       document.querySelectorAll('#settings-unit-control .segment-item').forEach((b) => {
         b.classList.toggle('active', b.getAttribute('data-unit') === unit);
       });
@@ -1924,7 +1858,6 @@
     },
 
     bindProfileAndSettings: function () {
-      // Weight Log Modal
       const btnAddWeight = document.getElementById('btn-add-weight-log');
       if (btnAddWeight) {
         btnAddWeight.addEventListener('click', () => this.openWeightModal());
@@ -1940,7 +1873,6 @@
         btnSaveWeight.addEventListener('click', () => this.saveWeightLog());
       }
 
-      // Settings Unit Control
       document.querySelectorAll('#settings-unit-control .segment-item').forEach((btn) => {
         btn.addEventListener('click', () => {
           const u = btn.getAttribute('data-unit');
@@ -1953,7 +1885,6 @@
         });
       });
 
-      // Weekly Goal Slider
       const weeklySlider = document.getElementById('settings-weekly-goal-slider');
       const weeklyDisplay = document.getElementById('settings-weekly-goal-display');
       if (weeklySlider && weeklyDisplay) {
@@ -1970,7 +1901,6 @@
         });
       }
 
-      // Rest Timer Slider
       const restSlider = document.getElementById('settings-rest-timer-slider');
       const restDisplay = document.getElementById('settings-rest-timer-display');
       if (restSlider && restDisplay) {
@@ -1985,7 +1915,6 @@
         });
       }
 
-      // Settings Theme Control
       document.querySelectorAll('#settings-theme-control .segment-item').forEach((btn) => {
         btn.addEventListener('click', () => {
           const th = btn.getAttribute('data-theme');
@@ -1996,7 +1925,6 @@
         });
       });
 
-      // Settings Accent Pickers
       document.querySelectorAll('.accent-color-circle').forEach((btn) => {
         btn.addEventListener('click', () => {
           const acc = btn.getAttribute('data-accent');
@@ -2004,7 +1932,6 @@
         });
       });
 
-      // Sound Toggle
       const soundToggle = document.getElementById('settings-sound-toggle');
       if (soundToggle) {
         soundToggle.addEventListener('change', (e) => {
@@ -2013,7 +1940,6 @@
         });
       }
 
-      // Vibration Toggle
       const vibToggle = document.getElementById('settings-vibration-toggle');
       if (vibToggle) {
         vibToggle.addEventListener('change', (e) => {
@@ -2022,7 +1948,6 @@
         });
       }
 
-      // Backup Export & Import
       const btnExportAll = document.getElementById('btn-export-full-backup');
       if (btnExportAll) {
         btnExportAll.addEventListener('click', () => {
@@ -2058,11 +1983,10 @@
         });
       }
 
-      // Reset Demo Data
       const btnResetDemo = document.getElementById('btn-reset-demo-data');
       if (btnResetDemo) {
         btnResetDemo.addEventListener('click', () => {
-          if (confirm('Сбросить все данные приложения к демонстрационным? Все ваши пользовательские тренировки будут перезаписаны.')) {
+          if (confirm('Сбросить все данные приложения? Все данные будут очищены.')) {
             localStorage.clear();
             location.reload();
           }
@@ -2075,7 +1999,7 @@
       const settings = window.BentoStorage.getSettings();
       const unit = settings.unit || 'kg';
 
-      let lastWeight = 78.5;
+      let lastWeight = 75.0;
       if (metrics.logs && metrics.logs.length > 0) {
         lastWeight = metrics.logs[metrics.logs.length - 1].weight;
       }
@@ -2103,7 +2027,6 @@
 
       const settings = window.BentoStorage.getSettings();
       const unit = settings.unit || 'kg';
-      // convert to kg if in lbs
       const inKg = window.BentoStorage.toKg(val, unit);
 
       const metrics = window.BentoStorage.getBodyMetrics();
@@ -2126,7 +2049,6 @@
       const title = document.getElementById('tpl-editor-title');
       const nameInput = document.getElementById('tpl-edit-name');
       const descInput = document.getElementById('tpl-edit-desc');
-      const listContainer = document.getElementById('tpl-edit-exercises-list');
       const btnDelete = document.getElementById('btn-delete-template');
 
       if (templateId) {
@@ -2211,7 +2133,6 @@
         `;
       }).join('');
 
-      // Input changes
       container.querySelectorAll('.tpl-inp-sets').forEach((inp) => {
         inp.addEventListener('change', (e) => {
           const idx = parseInt(e.target.getAttribute('data-idx'));
@@ -2253,7 +2174,6 @@
 
     openExercisePickerModalForTemplate: function () {
       this.openExercisePickerModal();
-      // Temporarily override the card click to add to template instead
       const container = document.getElementById('picker-exercises-list');
       container.querySelectorAll('.picker-item').forEach((card) => {
         card.onclick = () => {
@@ -2345,7 +2265,6 @@
       if (!container) return;
 
       const templates = window.BentoStorage.getTemplates();
-      const tplOptions = templates.map((t) => `<option value="${t.id}">${t.name}</option>`).join('');
 
       container.innerHTML = window._schedEditingSequence.map((slotVal, idx) => {
         return `

@@ -17,6 +17,16 @@
   <link rel="stylesheet" href="css/themes.css">
   <link rel="stylesheet" href="css/bento.css">
   <link rel="stylesheet" href="css/ios.css">
+  <script>
+    (function () {
+      function setAppHeight() {
+        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+      }
+      setAppHeight();
+      window.addEventListener('resize', setAppHeight);
+      window.addEventListener('orientationchange', setAppHeight);
+    })();
+  </script>
 </head>
 <body>
   <div id="app-root">
@@ -356,8 +366,8 @@
             <strong id="workout-sets-ticker">0 / 0</strong>
           </div>
           <div class="ticker-item">
-            <span>Объём:</span>
-            <strong id="workout-tonnage-ticker">0 кг</strong>
+            <span>Упражнений:</span>
+            <strong id="workout-exercises-ticker">0</strong>
           </div>
         </div>
       </div>
@@ -366,7 +376,7 @@
         <!-- Exercise Cards with Set Tables -->
       </div>
 
-      <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px max(env(safe-area-inset-bottom, 20px), 12px) 16px; background: var(--tab-bg); backdrop-filter: var(--glass-blur); border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; z-index: 10;">
+      <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px max(env(safe-area-inset-bottom, 0px), 12px) 16px; background: var(--tab-bg); backdrop-filter: var(--glass-blur); border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; z-index: 10;">
         <button class="btn btn-primary btn-block" id="btn-workout-add-exercise">+ Упражнение</button>
         <button class="btn btn-danger btn-sm" id="btn-workout-cancel">Отмена</button>
       </div>
@@ -443,7 +453,7 @@
         </div>
         <div class="sheet-body">
           <input type="text" id="picker-search-input" class="search-input" placeholder="Поиск упражнения..." style="margin-bottom: 12px;">
-          <div id="picker-exercises-list" class="catalog-list" style="max-height: 55dvh; overflow-y: auto;"></div>
+          <div id="picker-exercises-list" class="catalog-list" style="max-height: calc(var(--app-height, 100vh) * 0.55); overflow-y: auto;"></div>
         </div>
       </div>
     </div>
@@ -609,8 +619,8 @@
               <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="finish-modal-sets">0</div>
             </div>
             <div>
-              <div style="font-size: 11px; font-weight: 700; color: var(--text-tertiary);">ОБЪЁМ</div>
-              <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="finish-modal-tonnage">0 кг</div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-tertiary);">УПРАЖНЕНИЙ</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="finish-modal-exercises">0</div>
             </div>
           </div>
 

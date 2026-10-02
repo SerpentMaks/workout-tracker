@@ -172,236 +172,11 @@
 
   const DEFAULT_METRICS = {
     height: 178, // cm
-    logs: [
-      { id: 'm_1', date: '2026-09-15', weight: 79.5 },
-      { id: 'm_2', date: '2026-09-22', weight: 79.0 },
-      { id: 'm_3', date: '2026-09-29', weight: 78.4 },
-      { id: 'm_4', date: '2026-10-02', weight: 78.1 },
-    ],
+    logs: [],
   };
 
-  // Seed sample history for immediate analytics & previous sets lookup
-  const DEFAULT_HISTORY = [
-    {
-      id: 'hist_1',
-      title: 'Push: Грудь, Плечи и Трицепс',
-      templateId: 'tpl_push',
-      date: '2026-09-27T17:30:00.000Z',
-      durationSeconds: 3120, // 52 min
-      totalTonnage: 4320,
-      totalSets: 16,
-      completedSets: 16,
-      exercises: [
-        {
-          exerciseId: 'ex_bench_press',
-          name: 'Жим штанги лёжа',
-          category: 'chest',
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 10 повт',
-          sets: [
-            { setNumber: 1, weight: 67.5, reps: 8, completed: true },
-            { setNumber: 2, weight: 67.5, reps: 8, completed: true },
-            { setNumber: 3, weight: 67.5, reps: 8, completed: true },
-            { setNumber: 4, weight: 67.5, reps: 7, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_incline_db_press',
-          name: 'Жим гантелей на наклонной скамье',
-          category: 'chest',
-          progressionWeight: '+1-2 кг',
-          progressionReps: 'до 12 повт',
-          sets: [
-            { setNumber: 1, weight: 22, reps: 10, completed: true },
-            { setNumber: 2, weight: 22, reps: 10, completed: true },
-            { setNumber: 3, weight: 22, reps: 9, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_overhead_press',
-          name: 'Армейский жим стоя',
-          category: 'shoulders',
-          progressionWeight: '+1.5 кг',
-          progressionReps: 'до 10 повт',
-          sets: [
-            { setNumber: 1, weight: 42.5, reps: 8, completed: true },
-            { setNumber: 2, weight: 42.5, reps: 8, completed: true },
-            { setNumber: 3, weight: 42.5, reps: 7, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_lateral_raises',
-          name: 'Махи гантелями через стороны',
-          category: 'shoulders',
-          progressionWeight: '+0.5 кг',
-          progressionReps: 'до 15 повт',
-          sets: [
-            { setNumber: 1, weight: 10, reps: 12, completed: true },
-            { setNumber: 2, weight: 10, reps: 12, completed: true },
-            { setNumber: 3, weight: 10, reps: 11, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_tricep_pushdown',
-          name: 'Разгибание рук на блоке книзу',
-          category: 'arms',
-          progressionWeight: '+2 кг',
-          progressionReps: 'до 14 повт',
-          sets: [
-            { setNumber: 1, weight: 28, reps: 12, completed: true },
-            { setNumber: 2, weight: 28, reps: 12, completed: true },
-            { setNumber: 3, weight: 28, reps: 12, completed: true },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'hist_2',
-      title: 'Pull: Спина, Задняя дельта и Бицепс',
-      templateId: 'tpl_pull',
-      date: '2026-09-29T18:15:00.000Z',
-      durationSeconds: 3480, // 58 min
-      totalTonnage: 5180,
-      totalSets: 16,
-      completedSets: 16,
-      exercises: [
-        {
-          exerciseId: 'ex_deadlift',
-          name: 'Становая тяга',
-          category: 'back',
-          progressionWeight: '+5 кг',
-          progressionReps: 'до 8 повт',
-          sets: [
-            { setNumber: 1, weight: 95, reps: 6, completed: true },
-            { setNumber: 2, weight: 95, reps: 6, completed: true },
-            { setNumber: 3, weight: 95, reps: 6, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_pullups',
-          name: 'Подтягивания широким хватом',
-          category: 'back',
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 10 повт',
-          sets: [
-            { setNumber: 1, weight: 0, reps: 8, completed: true },
-            { setNumber: 2, weight: 0, reps: 8, completed: true },
-            { setNumber: 3, weight: 0, reps: 7, completed: true },
-            { setNumber: 4, weight: 0, reps: 6, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_barbell_row',
-          name: 'Тяга штанги в наклоне',
-          category: 'back',
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 12 повт',
-          sets: [
-            { setNumber: 1, weight: 62.5, reps: 10, completed: true },
-            { setNumber: 2, weight: 62.5, reps: 10, completed: true },
-            { setNumber: 3, weight: 62.5, reps: 9, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_rear_delt_flyes',
-          name: 'Разведение гантелей в наклоне',
-          category: 'shoulders',
-          progressionWeight: '+1 кг',
-          progressionReps: 'до 15 повт',
-          sets: [
-            { setNumber: 1, weight: 10, reps: 12, completed: true },
-            { setNumber: 2, weight: 10, reps: 12, completed: true },
-            { setNumber: 3, weight: 10, reps: 12, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_barbell_curl',
-          name: 'Подъём штанги на бицепс',
-          category: 'arms',
-          progressionWeight: '+1.5 кг',
-          progressionReps: 'до 12 повт',
-          sets: [
-            { setNumber: 1, weight: 32.5, reps: 10, completed: true },
-            { setNumber: 2, weight: 32.5, reps: 10, completed: true },
-            { setNumber: 3, weight: 32.5, reps: 9, completed: true },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'hist_3',
-      title: 'Legs & Core: Ноги и Мышцы кора',
-      templateId: 'tpl_legs_core',
-      date: '2026-10-01T18:00:00.000Z',
-      durationSeconds: 3240, // 54 min
-      totalTonnage: 6850,
-      totalSets: 17,
-      completedSets: 17,
-      exercises: [
-        {
-          exerciseId: 'ex_squat',
-          name: 'Приседания со штангой',
-          category: 'legs',
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 10 повт',
-          sets: [
-            { setNumber: 1, weight: 80, reps: 8, completed: true },
-            { setNumber: 2, weight: 80, reps: 8, completed: true },
-            { setNumber: 3, weight: 80, reps: 8, completed: true },
-            { setNumber: 4, weight: 80, reps: 8, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_romanian_deadlift',
-          name: 'Румынская тяга со штангой',
-          category: 'legs',
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 12 повт',
-          sets: [
-            { setNumber: 1, weight: 70, reps: 10, completed: true },
-            { setNumber: 2, weight: 70, reps: 10, completed: true },
-            { setNumber: 3, weight: 70, reps: 10, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_leg_press',
-          name: 'Жим ногами в тренажёре',
-          category: 'legs',
-          progressionWeight: '+5 кг',
-          progressionReps: 'до 12 повт',
-          sets: [
-            { setNumber: 1, weight: 140, reps: 10, completed: true },
-            { setNumber: 2, weight: 140, reps: 10, completed: true },
-            { setNumber: 3, weight: 140, reps: 10, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_hanging_leg_raises',
-          name: 'Подъёмы ног в висе',
-          category: 'core',
-          progressionWeight: 'без веса',
-          progressionReps: 'до 15 повт',
-          sets: [
-            { setNumber: 1, weight: 0, reps: 12, completed: true },
-            { setNumber: 2, weight: 0, reps: 12, completed: true },
-            { setNumber: 3, weight: 0, reps: 10, completed: true },
-          ],
-        },
-        {
-          exerciseId: 'ex_plank',
-          name: 'Планка классическая',
-          category: 'core',
-          progressionWeight: '+10 сек',
-          progressionReps: 'до 90 сек',
-          sets: [
-            { setNumber: 1, weight: 0, reps: 60, completed: true },
-            { setNumber: 2, weight: 0, reps: 50, completed: true },
-            { setNumber: 3, weight: 0, reps: 45, completed: true },
-          ],
-        },
-      ],
-    },
-  ];
+  // Start with clean empty history (no fake workouts)
+  const DEFAULT_HISTORY = [];
 
   window.BentoStorage = {
     // Generic read/write helpers
@@ -497,11 +272,17 @@
       this.set(STORAGE_KEYS.SCHEDULE, schedule);
     },
 
-    // History
+    // History (Clean empty start, purge legacy sample workouts)
     getHistory: function () {
       let hist = this.get(STORAGE_KEYS.HISTORY, null);
       if (!hist || !Array.isArray(hist)) {
         hist = DEFAULT_HISTORY;
+        this.set(STORAGE_KEYS.HISTORY, hist);
+      }
+      // Purge any dummy seed items from earlier test runs
+      const cleaned = hist.filter((w) => w.id !== 'hist_1' && w.id !== 'hist_2' && w.id !== 'hist_3');
+      if (cleaned.length !== hist.length) {
+        hist = cleaned;
         this.set(STORAGE_KEYS.HISTORY, hist);
       }
       return hist;
@@ -527,7 +308,6 @@
         if (found && found.sets && found.sets.length > 0) {
           const compSets = found.sets.filter((s) => s.completed);
           if (compSets.length > 0) {
-            // Return representative or top set
             return {
               date: workout.date,
               workoutTitle: workout.title,
