@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>BentoFit — Трекер Тренировок</title>
+
+  <!-- iOS PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BentoFit">
+  <meta name="theme-color" content="#0a0d14">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/bento.css">
+  <link rel="stylesheet" href="css/ios.css">
+</head>
+<body>
+  <div id="app-root">
+    <!-- App Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+          </svg>
+        </div>
+        <div class="brand-name">Bento<span>Fit</span></div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="header-unit-btn" aria-label="Сменить единицу веса" title="Сменить единицу веса">
+          <span id="header-unit-label" style="font-size:12px; font-weight:800;">КГ</span>
+        </button>
+        <button class="icon-btn" id="header-theme-btn" aria-label="Сменить тему" title="Сменить тему">
+          <svg id="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg id="theme-icon-moon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Views -->
+    <main class="main-content">
+      <!-- 1. HOME (Bento Dashboard) -->
+      <section id="view-home" class="view-panel active">
+        <div id="home-bento-container" class="bento-grid">
+          <!-- Dynamic Bento Tiles populated by app.js -->
+        </div>
+      </section>
+
+      <!-- 2. TEMPLATES & SCHEDULE -->
+      <section id="view-templates" class="view-panel">
+        <div class="section-header" style="margin-top: 0;">
+          <h1 class="section-title">Программы тренировок</h1>
+          <button class="btn btn-primary btn-sm" id="btn-create-template">+ Создать</button>
+        </div>
+
+        <!-- Schedule & Cycle Engine Status Bento Card -->
+        <div class="bento-card bento-hero-card" id="schedule-cycle-card" style="margin-bottom: 16px;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="section-header">
+          <h2 class="section-title" style="font-size: 17px;">Сохранённые шаблоны</h2>
+          <button class="btn btn-secondary btn-sm" id="btn-quick-free-workout">⚡ Свободный старт</button>
+        </div>
+
+        <div id="templates-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Template cards -->
+        </div>
+      </section>
+
+      <!-- 3. EXERCISE CATALOG -->
+      <section id="view-exercises" class="view-panel">
+        <div class="section-header" style="margin-top: 0;">
+          <h1 class="section-title">База упражнений</h1>
+          <button class="btn btn-primary btn-sm" id="btn-create-exercise">+ Упражнение</button>
+        </div>
+
+        <div class="search-input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="exercise-search-input" class="search-input" placeholder="Поиск по 34 упражнениям и мышцам...">
+        </div>
+
+        <div class="segmented-control" id="muscle-filter-control" style="margin-bottom: 14px;">
+          <button class="segment-item active" data-category="all">Все (34)</button>
+          <button class="segment-item" data-category="chest">Грудь</button>
+          <button class="segment-item" data-category="back">Спина</button>
+          <button class="segment-item" data-category="legs">Ноги</button>
+          <button class="segment-item" data-category="shoulders">Плечи</button>
+          <button class="segment-item" data-category="arms">Руки</button>
+          <button class="segment-item" data-category="core">Кор</button>
+        </div>
+
+        <div class="catalog-list" id="exercises-catalog-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button class="btn btn-secondary btn-sm btn-block" id="btn-export-exercises">Экспорт базы JSON</button>
+          <button class="btn btn-secondary btn-sm btn-block" id="btn-import-exercises">Импорт JSON</button>
+          <input type="file" id="input-import-exercises-file" accept=".json" style="display:none;">
+        </div>
+      </section>
+
+      <!-- 4. ANALYTICS & CALENDAR -->
+      <section id="view-analytics" class="view-panel">
+        <div class="section-header" style="margin-top: 0;">
+          <h1 class="section-title">Аналитика и Дневник</h1>
+        </div>
+
+        <!-- Interactive Progress Calendar -->
+        <div class="cal-card" id="analytics-calendar-wrap">
+          <!-- Calendar rendered by BentoAnalytics.renderCalendarHTML() -->
+        </div>
+
+        <!-- Selected Date Sessions -->
+        <div id="calendar-day-details-box" style="margin-bottom: 16px;"></div>
+
+        <!-- Stats Overview Bento Tiles -->
+        <div class="section-header">
+          <h2 class="section-title" style="font-size: 17px;">Общий прогресс</h2>
+        </div>
+        <div id="analytics-stats-bento" class="bento-grid" style="margin-bottom: 18px;">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Full History List -->
+        <div class="section-header">
+          <h2 class="section-title" style="font-size: 17px;">История тренировок</h2>
+        </div>
+        <div id="analytics-history-list">
+          <!-- History cards -->
+        </div>
+      </section>
+
+      <!-- 5. PROFILE & SETTINGS -->
+      <section id="view-profile" class="view-panel">
+        <div class="section-header" style="margin-top: 0;">
+          <h1 class="section-title">Параметры и Настройки</h1>
+        </div>
+
+        <!-- Body Metrics Card -->
+        <div class="bento-card bento-col-2" style="margin-bottom: 16px;">
+          <div class="bento-card-header">
+            <span class="bento-card-tag accent">Мониторинг тела</span>
+            <button class="btn btn-primary btn-sm" id="btn-add-weight-log">+ Замер</button>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div style="background: var(--pill-bg); padding: 10px 12px; border-radius: var(--radius-md);">
+              <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">ТЕКУЩИЙ ВЕС</div>
+              <div class="bento-stat-num" id="profile-current-weight">-- <span class="bento-stat-unit">кг</span></div>
+            </div>
+            <div style="background: var(--pill-bg); padding: 10px 12px; border-radius: var(--radius-md);">
+              <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">РОСТ / ИМТ</div>
+              <div class="bento-stat-num" id="profile-bmi-val">-- <span class="bento-stat-unit" style="font-size:12px;" id="profile-height-val">178 см</span></div>
+            </div>
+          </div>
+          <!-- Recent Weight Logs Accordion -->
+          <div id="profile-weight-history-list" style="max-height: 140px; overflow-y: auto;">
+            <!-- Weight log items -->
+          </div>
+        </div>
+
+        <!-- Preferences Form -->
+        <div class="bento-card bento-col-2" style="margin-bottom: 16px;">
+          <span class="bento-card-tag accent" style="margin-bottom: 14px;">Персонализация</span>
+
+          <!-- Unit Switcher -->
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Единицы измерения веса</label>
+            <div class="segmented-control" id="settings-unit-control">
+              <button class="segment-item active" data-unit="kg">Килограммы (кг)</button>
+              <button class="segment-item" data-unit="lbs">Фунты (lbs)</button>
+            </div>
+          </div>
+
+          <!-- Weekly Goal -->
+          <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 13px; font-weight: 700;">Цель тренировок в неделю</label>
+              <strong id="settings-weekly-goal-display" style="color: var(--accent);">3 дня</strong>
+            </div>
+            <input type="range" id="settings-weekly-goal-slider" min="1" max="14" step="1" value="3" style="width: 100%; accent-color: var(--accent);">
+          </div>
+
+          <!-- Default Rest Timer Duration -->
+          <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 13px; font-weight: 700;">Базовый отдых между сетами</label>
+              <strong id="settings-rest-timer-display" style="color: var(--accent);">90 сек</strong>
+            </div>
+            <input type="range" id="settings-rest-timer-slider" min="15" max="600" step="15" value="90" style="width: 100%; accent-color: var(--accent);">
+          </div>
+
+          <!-- Theme -->
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Тема оформления</label>
+            <div class="segmented-control" id="settings-theme-control">
+              <button class="segment-item active" data-theme="dark">Тёмная (Dark Soft)</button>
+              <button class="segment-item" data-theme="light">Светлая (Light Soft)</button>
+            </div>
+          </div>
+
+          <!-- Accent Colors -->
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Цветовой акцент</label>
+            <div style="display: flex; gap: 10px; justify-content: space-between;" id="settings-accent-picker">
+              <button class="accent-color-circle active" data-accent="violet" style="background:#8b5cf6;" title="Аметист"></button>
+              <button class="accent-color-circle" data-accent="cyan" style="background:#06b6d4;" title="Сапфир"></button>
+              <button class="accent-color-circle" data-accent="emerald" style="background:#10b981;" title="Изумруд"></button>
+              <button class="accent-color-circle" data-accent="coral" style="background:#f97316;" title="Коралл"></button>
+              <button class="accent-color-circle" data-accent="rose" style="background:#f43f5e;" title="Роза"></button>
+              <button class="accent-color-circle" data-accent="amber" style="background:#f59e0b;" title="Янтарь"></button>
+            </div>
+          </div>
+
+          <!-- Feedback Toggles -->
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: 700; font-size: 14px;">Звуковой сигнал</div>
+                <div style="font-size: 11px; color: var(--text-secondary);">3-тоновый аккорд Web Audio API</div>
+              </div>
+              <input type="checkbox" id="settings-sound-toggle" checked style="width: 20px; height: 20px; accent-color: var(--accent);">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: 700; font-size: 14px;">Виброотклик (Haptic)</div>
+                <div style="font-size: 11px; color: var(--text-secondary);">Вибрация при чеке и завершении сетов</div>
+              </div>
+              <input type="checkbox" id="settings-vibration-toggle" checked style="width: 20px; height: 20px; accent-color: var(--accent);">
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Backup & Reset -->
+        <div class="bento-card bento-col-2" style="margin-bottom: 24px;">
+          <span class="bento-card-tag accent" style="margin-bottom: 12px;">Резервное копирование</span>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Все данные хранятся автономно на устройстве. Регулярно делайте резервную копию.</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn btn-secondary btn-block" id="btn-export-full-backup">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Экспорт всех данных (JSON)
+            </button>
+            <button class="btn btn-secondary btn-block" id="btn-import-full-backup">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Восстановить из резервной копии
+            </button>
+            <input type="file" id="input-import-backup-file" accept=".json" style="display: none;">
+            <button class="btn btn-danger btn-block btn-sm" id="btn-reset-demo-data" style="margin-top: 6px;">
+              Сбросить к исходным демо-данным
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Floating Rest Timer Pill (Sticky Docked) -->
+    <div id="floating-timer-pill" class="floating-timer-pill hidden">
+      <div class="timer-pill-left" id="btn-expand-timer">
+        <div class="timer-pill-ring-wrap">
+          <svg viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="14" fill="none" stroke="var(--pill-bg)" stroke-width="3"/>
+            <circle id="timer-pill-progress" cx="16" cy="16" r="14" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">Отдых</div>
+          <div class="timer-pill-time" id="timer-pill-time">01:30</div>
+        </div>
+      </div>
+      <div class="timer-pill-actions">
+        <button class="btn btn-secondary btn-sm" id="btn-pill-add-30" style="padding: 5px 9px; font-size: 12px;">+30с</button>
+        <button class="icon-btn" id="btn-pill-skip" style="width: 32px; height: 32px;" title="Пропустить отдых">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Tab Navigation Bar -->
+    <nav class="bottom-tab-bar">
+      <button class="tab-btn active" data-tab="home">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Главная</span>
+      </button>
+
+      <button class="tab-btn" data-tab="templates">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Программы</span>
+      </button>
+
+      <button class="tab-btn" data-tab="exercises">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">База</span>
+      </button>
+
+      <button class="tab-btn" data-tab="analytics">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Дневник</span>
+      </button>
+
+      <button class="tab-btn" data-tab="profile">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Настройки</span>
+      </button>
+    </nav>
+
+    <!-- FULLSCREEN ACTIVE WORKOUT SCREEN -->
+    <div id="active-workout-screen" class="active-workout-screen hidden">
+      <div class="workout-topbar">
+        <div class="workout-topbar-row">
+          <input type="text" id="workout-title-input" class="workout-title-input" value="Силовая тренировка" placeholder="Название тренировки">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btn-minimize-workout" title="Свернуть">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-finish-workout">Завершить</button>
+          </div>
+        </div>
+        <div class="workout-metrics-ticker">
+          <div class="ticker-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="workout-duration-ticker">00:00</span>
+          </div>
+          <div class="ticker-item">
+            <span>Подходы:</span>
+            <strong id="workout-sets-ticker">0 / 0</strong>
+          </div>
+          <div class="ticker-item">
+            <span>Объём:</span>
+            <strong id="workout-tonnage-ticker">0 кг</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="workout-body-scroll" id="workout-exercises-container">
+        <!-- Exercise Cards with Set Tables -->
+      </div>
+
+      <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px max(env(safe-area-inset-bottom, 20px), 12px) 16px; background: var(--tab-bg); backdrop-filter: var(--glass-blur); border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; z-index: 10;">
+        <button class="btn btn-primary btn-block" id="btn-workout-add-exercise">+ Упражнение</button>
+        <button class="btn btn-danger btn-sm" id="btn-workout-cancel">Отмена</button>
+      </div>
+    </div>
+
+    <!-- MODAL: Rest Timer Expanded -->
+    <div id="rest-timer-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet" style="align-items: center; text-align: center;">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header" style="width: 100%;">
+          <span class="sheet-title">Таймер отдыха</span>
+          <button class="icon-btn" id="btn-close-rest-modal">✕</button>
+        </div>
+        <div class="sheet-body" style="width: 100%; display: flex; flex-direction: column; align-items: center; padding: 24px 20px;">
+          <!-- Big Circular Progress Ring -->
+          <div style="width: 170px; height: 170px; position: relative; margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 160 160" style="transform: rotate(-90deg); width: 100%; height: 100%;">
+              <circle cx="80" cy="80" r="70" fill="none" stroke="var(--pill-bg)" stroke-width="8"/>
+              <circle id="modal-timer-progress" cx="80" cy="80" r="70" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round"/>
+            </svg>
+            <div style="position: absolute; text-align: center;">
+              <div id="modal-timer-time" style="font-family: var(--font-mono); font-size: 38px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px;">01:30</div>
+              <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">до следующего подхода</div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div style="display: flex; gap: 12px; width: 100%; max-width: 320px; justify-content: center; margin-bottom: 16px;">
+            <button class="btn btn-secondary btn-sm" id="btn-modal-sub-15">-15с</button>
+            <button class="btn btn-secondary btn-sm" id="btn-modal-pause-toggle">Пауза</button>
+            <button class="btn btn-secondary btn-sm" id="btn-modal-add-30">+30с</button>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="btn-modal-skip-rest" style="max-width: 320px;">Пропустить и к подходу</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Exercise Detail & Technique Sheet -->
+    <div id="exercise-detail-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title" id="ex-modal-title">Жим штанги лёжа</span>
+          <button class="icon-btn" id="btn-close-exercise-detail">✕</button>
+        </div>
+        <div class="sheet-body" id="ex-modal-body">
+          <!-- Populated dynamically with SVG, target muscles, steps, personal history -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Exercise Performance History Sheet -->
+    <div id="exercise-history-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title" id="ex-history-modal-title">История упражнения</span>
+          <button class="icon-btn" id="btn-close-ex-history">✕</button>
+        </div>
+        <div class="sheet-body" id="ex-history-modal-body">
+          <!-- Populated dynamically with past sessions, weights & reps -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Add Exercise Picker to Active Workout -->
+    <div id="picker-exercise-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title">Выбрать упражнение</span>
+          <button class="icon-btn" id="btn-close-exercise-picker">✕</button>
+        </div>
+        <div class="sheet-body">
+          <input type="text" id="picker-search-input" class="search-input" placeholder="Поиск упражнения..." style="margin-bottom: 12px;">
+          <div id="picker-exercises-list" class="catalog-list" style="max-height: 55dvh; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Template Creator / Editor -->
+    <div id="template-editor-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title" id="tpl-editor-title">Конструктор программы</span>
+          <button class="icon-btn" id="btn-close-tpl-editor">✕</button>
+        </div>
+        <div class="sheet-body">
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">НАЗВАНИЕ ШАБЛОНА</label>
+            <input type="text" id="tpl-edit-name" class="search-input" placeholder="Например: Спина и Бицепс">
+          </div>
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">ОПИСАНИЕ</label>
+            <input type="text" id="tpl-edit-desc" class="search-input" placeholder="Краткое описание акцентов тренировки">
+          </div>
+          <div class="section-header">
+            <h3 class="section-title" style="font-size: 15px;">Упражнения в программе</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-tpl-add-exercise">+ Добавить</button>
+          </div>
+          <div id="tpl-edit-exercises-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+            <!-- Exercise configuration blocks -->
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-primary btn-block" id="btn-save-template">Сохранить программу</button>
+            <button class="btn btn-danger btn-sm" id="btn-delete-template" style="display: none;">Удалить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Custom Exercise Creator / Editor -->
+    <div id="custom-exercise-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title" id="custom-ex-modal-title">Новое упражнение</span>
+          <button class="icon-btn" id="btn-close-custom-ex">✕</button>
+        </div>
+        <div class="sheet-body">
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">НАЗВАНИЕ</label>
+            <input type="text" id="custom-ex-name" class="search-input" placeholder="Название упражнения">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">МЫШЕЧНАЯ ГРУППА</label>
+            <select id="custom-ex-category" class="search-input" style="padding: 10px 14px;">
+              <option value="chest">Грудь</option>
+              <option value="back">Спина</option>
+              <option value="legs">Ноги</option>
+              <option value="shoulders">Плечи</option>
+              <option value="arms">Руки</option>
+              <option value="core">Кор</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">ЦЕЛЕВЫЕ МЫШЦЫ (через запятую)</label>
+            <input type="text" id="custom-ex-muscles" class="search-input" placeholder="например: Трицепс, Верх груди">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">ТЕХНИКА И ИНСТРУКЦИЯ</label>
+            <textarea id="custom-ex-technique" class="search-input" style="height: 100px; resize: none;" placeholder="Опишите исходное положение и правильную технику"></textarea>
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-save-custom-exercise">Сохранить упражнение</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Body Weight Log Entry -->
+    <div id="weight-log-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet" style="max-width: 400px;">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title">Замер параметров тела</span>
+          <button class="icon-btn" id="btn-close-weight-modal">✕</button>
+        </div>
+        <div class="sheet-body">
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">ВЕС ТЕЛА (<span class="unit-label">кг</span>)</label>
+            <input type="number" step="0.1" id="input-weight-val" class="search-input" placeholder="78.5" style="font-size: 20px; font-weight: 800; font-family: var(--font-mono);">
+          </div>
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">РОСТ (см)</label>
+            <input type="number" id="input-height-val" class="search-input" placeholder="178" style="font-size: 16px; font-weight: 700; font-family: var(--font-mono);">
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">ДАТА ЗАМЕРА</label>
+            <input type="date" id="input-weight-date" class="search-input">
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-save-weight-log">Сохранить замер</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Interval Schedule / Cycle Configuration -->
+    <div id="schedule-settings-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title">Настройка цикла и расписания</span>
+          <button class="icon-btn" id="btn-close-sched-modal">✕</button>
+        </div>
+        <div class="sheet-body">
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">ДАТА СТАРТА ЦИКЛА</label>
+            <input type="date" id="sched-start-date-input" class="search-input">
+          </div>
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 4px;">ИНТЕРВАЛ ОТДЫХА МЕЖДУ ТРЕНИРОВКАМИ (ДНЕЙ)</label>
+            <input type="number" min="1" max="7" id="sched-interval-input" class="search-input" value="1">
+          </div>
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 6px;">ПОСЛЕДОВАТЕЛЬНОСТЬ РОТАЦИИ ПРОГРАММ В ЦИКЛЕ</label>
+            <div id="sched-sequence-editor" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Sequence slots -->
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-sched-add-slot" style="margin-top: 10px;">+ Добавить шаг в цикл</button>
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-save-schedule-config">Сохранить расписание</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Historical Workout Inspector -->
+    <div id="workout-detail-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title" id="hist-modal-title">Детали тренировки</span>
+          <button class="icon-btn" id="btn-close-hist-detail">✕</button>
+        </div>
+        <div class="sheet-body" id="hist-modal-body">
+          <!-- Full set protocol & progression details -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Workout Finish Confirmation Dialog -->
+    <div id="workout-finish-modal" class="modal-overlay hidden">
+      <div class="bottom-sheet" style="text-align: center;">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title">Завершить тренировку?</span>
+          <button class="icon-btn" id="btn-close-finish-dialog">✕</button>
+        </div>
+        <div class="sheet-body" style="padding: 24px 20px;">
+          <div style="font-size: 48px; margin-bottom: 8px;">🏆</div>
+          <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;" id="finish-modal-congrats">Отличная работа!</h2>
+          <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">Сессия будет сохранена в дневник, а таймер и веса зафиксированы.</p>
+
+          <div style="background: var(--pill-bg); border-radius: var(--radius-lg); padding: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px;">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-tertiary);">ВРЕМЯ</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="finish-modal-duration">00:00</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-tertiary);">ПОДХОДЫ</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="finish-modal-sets">0</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-tertiary);">ОБЪЁМ</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="finish-modal-tonnage">0 кг</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary btn-block" id="btn-finish-cancel">Продолжить</button>
+            <button class="btn btn-primary btn-block" id="btn-finish-confirm">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="app-toast" class="toast-banner hidden"></div>
+  </div>
+
+  <!-- Style helper for accent picker circle -->
+  <style>
+    .accent-color-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: var(--spring-bounce);
+      outline: none;
+    }
+    .accent-color-circle:active {
+      transform: scale(0.9);
+    }
+    .accent-color-circle.active {
+      border-color: #ffffff;
+      box-shadow: 0 0 12px currentColor;
+    }
+  </style>
+
+  <!-- Application Scripts -->
+  <script src="js/exercises-data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/schedule.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch((err) => {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
