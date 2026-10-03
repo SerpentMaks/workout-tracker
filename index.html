@@ -7,7 +7,7 @@
 
   <!-- iOS PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BentoFit">
   <meta name="theme-color" content="#0a0d14">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -20,16 +20,7 @@
   <script>
     (function () {
       function setAppHeight() {
-        var isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-        if (isStandalone) {
-          document.documentElement.classList.add('ios-standalone');
-          var h = Math.max(window.innerHeight || 0, window.screen.height || 0);
-          if (h > 0) {
-            document.documentElement.style.setProperty('--app-height', h + 'px');
-          }
-        } else {
-          document.documentElement.style.setProperty('--app-height', (window.innerHeight || window.screen.height) + 'px');
-        }
+        document.documentElement.style.setProperty('--app-height', (window.innerHeight || window.screen.height) + 'px');
       }
       setAppHeight();
       window.addEventListener('resize', setAppHeight);
