@@ -48,8 +48,16 @@
     },
 
     updateAppHeight: function () {
-      const vh = window.innerHeight;
-      document.documentElement.style.setProperty('--app-height', vh + 'px');
+      const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      if (isStandalone) {
+        document.documentElement.classList.add('ios-standalone');
+        const h = Math.max(window.innerHeight || 0, window.screen.height || 0);
+        if (h > 0) {
+          document.documentElement.style.setProperty('--app-height', h + 'px');
+        }
+      } else {
+        document.documentElement.style.setProperty('--app-height', (window.innerHeight || window.screen.height) + 'px');
+      }
     },
 
     // ----------------------------------------------------
@@ -80,6 +88,11 @@
       document.querySelectorAll('.unit-label').forEach((el) => {
         el.textContent = settings.unit || 'kg';
       });
+
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', settings.theme === 'light' ? '#f4f6fa' : '#0a0d14');
+      }
     },
 
     toggleTheme: function () {
@@ -1991,6 +2004,39 @@
             location.reload();
           }
         });
+      }
+
+      const btnClearCache = document.getElementById('btn-clear-app-cache');
+      if (btnClearCache) {
+        btnClearCache.addEventListener('click', () => {
+          this.clearAppCache();
+        });
+      }
+    },
+
+    clearAppCache: async function () {
+      if (!confirm('Очистить кэш приложения и обновить файлы до актуальной версии? Ваши тренировки останутся нетронутыми.')) {
+        return;
+      }
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const reg of registrations) {
+            await reg.unregister();
+          }
+        }
+        sessionStorage.clear();
+        this.showToast('Кэш очищен! Перезагрузка...', 'success');
+        setTimeout(() => {
+          window.location.reload(true);
+        }, 600);
+      } catch (err) {
+        console.error('Clear cache error:', err);
+        this.showToast('Не удалось очистить кэш: ' + err.message, 'danger');
       }
     },
 

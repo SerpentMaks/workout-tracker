@@ -7,7 +7,7 @@
 
   <!-- iOS PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="BentoFit">
   <meta name="theme-color" content="#0a0d14">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -20,7 +20,16 @@
   <script>
     (function () {
       function setAppHeight() {
-        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+        var isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+        if (isStandalone) {
+          document.documentElement.classList.add('ios-standalone');
+          var h = Math.max(window.innerHeight || 0, window.screen.height || 0);
+          if (h > 0) {
+            document.documentElement.style.setProperty('--app-height', h + 'px');
+          }
+        } else {
+          document.documentElement.style.setProperty('--app-height', (window.innerHeight || window.screen.height) + 'px');
+        }
       }
       setAppHeight();
       window.addEventListener('resize', setAppHeight);
@@ -270,6 +279,21 @@
               Сбросить к исходным демо-данным
             </button>
           </div>
+        </div>
+
+        <!-- Cache & System Management -->
+        <div class="bento-card bento-col-2" style="margin-bottom: 24px;">
+          <span class="bento-card-tag accent" style="margin-bottom: 12px;">Система и кэш</span>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Очистка кэша обновит файлы приложения до последней версии. Ваши сохранённые тренировки, программы и замеры не будут удалены.</p>
+          <button class="btn btn-secondary btn-block" id="btn-clear-app-cache">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+              <path d="M16 16h5v5"/>
+            </svg>
+            Очистить кэш
+          </button>
         </div>
       </section>
     </main>
