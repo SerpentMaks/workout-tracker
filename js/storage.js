@@ -15,6 +15,7 @@
     weeklyGoal: 3, // 1 to 14
     defaultRestSeconds: 90, // 15 to 600
     theme: 'dark', // 'dark' or 'light'
+    uiStyle: 'bento', // 'bento' or 'metamorphism'
     accent: 'violet', // 'violet', 'cyan', 'emerald', 'coral', 'rose', 'amber'
     soundEnabled: true,
     vibrationEnabled: true,
@@ -192,8 +193,10 @@
     set: function (key, value) {
       try {
         localStorage.setItem(key, JSON.stringify(value));
+        return true;
       } catch (e) {
         console.error('Error writing to localStorage', key, e);
+        return false;
       }
     },
 
@@ -207,7 +210,7 @@
       return exs;
     },
     saveExercises: function (exercises) {
-      this.set(STORAGE_KEYS.EXERCISES, exercises);
+      return this.set(STORAGE_KEYS.EXERCISES, exercises);
     },
     getExerciseById: function (id) {
       const all = this.getExercises();
@@ -221,11 +224,11 @@
       } else {
         all.push(exercise);
       }
-      this.saveExercises(all);
+      return this.saveExercises(all);
     },
     deleteExercise: function (id) {
       const all = this.getExercises().filter((e) => e.id !== id);
-      this.saveExercises(all);
+      return this.saveExercises(all);
     },
 
     // Templates
@@ -238,7 +241,7 @@
       return tpls;
     },
     saveTemplates: function (templates) {
-      this.set(STORAGE_KEYS.TEMPLATES, templates);
+      return this.set(STORAGE_KEYS.TEMPLATES, templates);
     },
     getTemplateById: function (id) {
       const all = this.getTemplates();
@@ -252,11 +255,11 @@
       } else {
         all.push(template);
       }
-      this.saveTemplates(all);
+      return this.saveTemplates(all);
     },
     deleteTemplate: function (id) {
       const all = this.getTemplates().filter((t) => t.id !== id);
-      this.saveTemplates(all);
+      return this.saveTemplates(all);
     },
 
     // Schedule
@@ -269,7 +272,7 @@
       return sched;
     },
     saveSchedule: function (schedule) {
-      this.set(STORAGE_KEYS.SCHEDULE, schedule);
+      return this.set(STORAGE_KEYS.SCHEDULE, schedule);
     },
 
     // History (Clean empty start, purge legacy sample workouts)
@@ -288,12 +291,17 @@
       return hist;
     },
     saveHistory: function (history) {
-      this.set(STORAGE_KEYS.HISTORY, history);
+      return this.set(STORAGE_KEYS.HISTORY, history);
     },
     addWorkoutToHistory: function (workout) {
       const hist = this.getHistory();
-      hist.unshift(workout);
-      this.saveHistory(hist);
+      const existingIdx = hist.findIndex((item) => item.id === workout.id);
+      if (existingIdx >= 0) {
+        hist[existingIdx] = workout;
+      } else {
+        hist.unshift(workout);
+      }
+      return this.saveHistory(hist);
     },
     getWorkoutById: function (id) {
       return this.getHistory().find((w) => w.id === id) || null;
@@ -347,13 +355,27 @@
       return this.get(STORAGE_KEYS.ACTIVE_WORKOUT, null);
     },
     saveActiveWorkout: function (workout) {
-      this.set(STORAGE_KEYS.ACTIVE_WORKOUT, workout);
+      return this.set(STORAGE_KEYS.ACTIVE_WORKOUT, workout);
     },
     clearActiveWorkout: function () {
       try {
         localStorage.removeItem(STORAGE_KEYS.ACTIVE_WORKOUT);
+        return true;
       } catch (e) {
         console.error('Error removing active workout', e);
+        return false;
+      }
+    },
+
+    resetAppData: function () {
+      try {
+        Object.keys(STORAGE_KEYS).forEach((name) => {
+          localStorage.removeItem(STORAGE_KEYS[name]);
+        });
+        return true;
+      } catch (e) {
+        console.error('Error resetting BentoFit data', e);
+        return false;
       }
     },
 
@@ -367,25 +389,28 @@
       return metrics;
     },
     saveBodyMetrics: function (metrics) {
-      this.set(STORAGE_KEYS.BODY_METRICS, metrics);
+      return this.set(STORAGE_KEYS.BODY_METRICS, metrics);
     },
-    addWeightLog: function (weight, dateStr) {
+    addWeightLog: function (weight, dateStr, height) {
       const metrics = this.getBodyMetrics();
-      const date = dateStr || new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const localDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+      const date = dateStr || localDate;
+      if (Number.isFinite(height) && height > 0) {
+        metrics.height = height;
+      }
       metrics.logs.push({
         id: 'm_' + Date.now(),
         date: date,
         weight: parseFloat(weight),
       });
       metrics.logs.sort((a, b) => new Date(a.date) - new Date(b.date));
-      this.saveBodyMetrics(metrics);
-      return metrics;
+      return this.saveBodyMetrics(metrics) ? metrics : null;
     },
     deleteWeightLog: function (id) {
       const metrics = this.getBodyMetrics();
       metrics.logs = metrics.logs.filter((l) => l.id !== id);
-      this.saveBodyMetrics(metrics);
-      return metrics;
+      return this.saveBodyMetrics(metrics) ? metrics : null;
     },
 
     // Settings
@@ -396,8 +421,7 @@
     saveSettings: function (settings) {
       const current = this.getSettings();
       const merged = Object.assign({}, current, settings);
-      this.set(STORAGE_KEYS.SETTINGS, merged);
-      return merged;
+      return this.set(STORAGE_KEYS.SETTINGS, merged) ? merged : null;
     },
 
     // Unit conversion helpers
@@ -460,17 +484,21 @@
         }
         const current = this.getExercises();
         const merged = [...current];
+        let importedCount = 0;
         for (const item of list) {
-          if (!item.id || !item.name) continue;
+          if (!item || typeof item !== 'object' || typeof item.id !== 'string' || !item.id.trim() || typeof item.name !== 'string' || !item.name.trim()) continue;
           const idx = merged.findIndex((e) => e.id === item.id);
           if (idx >= 0) {
             merged[idx] = item;
           } else {
             merged.push(item);
           }
+          importedCount++;
         }
-        this.saveExercises(merged);
-        return { success: true, count: list.length };
+        if (!this.saveExercises(merged)) {
+          return { success: false, error: 'Не удалось записать упражнения в хранилище.' };
+        }
+        return { success: true, count: importedCount };
       } catch (e) {
         return { success: false, error: e.message };
       }

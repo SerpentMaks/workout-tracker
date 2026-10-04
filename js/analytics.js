@@ -1,5 +1,10 @@
 // BentoFit Analytics, Calendar & History Engine
 (function () {
+  function toLocalDateKey(dateValue) {
+    const date = dateValue ? new Date(dateValue) : new Date();
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+  }
+
   let calendarYear = new Date().getFullYear();
   let calendarMonth = new Date().getMonth(); // 0-11
   let selectedDate = null; // YYYY-MM-DD
@@ -79,7 +84,7 @@
     getWorkoutsForDate: function (dateStr) {
       const history = window.BentoStorage.getHistory();
       return history.filter((w) => {
-        const wDate = new Date(w.date).toISOString().split('T')[0];
+        const wDate = toLocalDateKey(w.date);
         return wDate === dateStr;
       });
     },
@@ -91,7 +96,7 @@
       history.forEach((w) => {
         const d = new Date(w.date);
         if (d.getFullYear() === calendarYear && d.getMonth() === calendarMonth) {
-          const dateStr = d.toISOString().split('T')[0];
+          const dateStr = toLocalDateKey(d);
           map[dateStr] = (map[dateStr] || 0) + 1;
         }
       });
@@ -113,7 +118,7 @@
       // Monday = 0, Sunday = 6
       let startDayOfWeek = (firstDay.getDay() + 6) % 7;
 
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = toLocalDateKey();
 
       let html = `
         <div class="cal-header">

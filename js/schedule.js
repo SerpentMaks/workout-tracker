@@ -7,15 +7,21 @@
       const target = targetDateObj ? new Date(targetDateObj) : new Date();
       target.setHours(0, 0, 0, 0);
 
-      const start = new Date(scheduleConfig.startDate || '2026-10-01');
+      const startDateParts = String(scheduleConfig.startDate || '2026-10-01').split('-').map(Number);
+      const start = new Date(startDateParts[0], startDateParts[1] - 1, startDateParts[2]);
       start.setHours(0, 0, 0, 0);
 
-      const diffTime = target.getTime() - start.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const targetDay = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+      const startDay = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+      const diffDays = Math.floor((targetDay - startDay) / (1000 * 60 * 60 * 24));
 
-      const sequence = (scheduleConfig.sequence && scheduleConfig.sequence.length > 0)
+      const baseSequence = (scheduleConfig.sequence && scheduleConfig.sequence.length > 0)
         ? scheduleConfig.sequence
         : ['tpl_push', 'REST', 'tpl_pull', 'REST', 'tpl_legs_core', 'REST', 'REST'];
+      const intervalDays = Math.max(1, Math.min(30, parseInt(scheduleConfig.intervalDays, 10) || 1));
+      const sequence = baseSequence.flatMap((item) => (
+        item === 'REST' ? Array(intervalDays).fill('REST') : [item]
+      ));
 
       const cycleLength = sequence.length;
       // Handle past/future modulo safely

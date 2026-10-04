@@ -5,9 +5,8 @@
   --font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
 
   /* Layout Constants - Native iOS Tab Bar height is 50px */
-  --tab-bar-height: 0px;
+  --tab-bar-height: 50px;
   --header-height: 50px;
-  --app-height: 100dvh;
   --radius-xl: 26px;
   --radius-lg: 20px;
   --radius-md: 14px;

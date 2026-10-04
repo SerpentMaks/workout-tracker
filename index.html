@@ -17,10 +17,25 @@
   <link rel="stylesheet" href="css/themes.css">
   <link rel="stylesheet" href="css/bento.css">
   <link rel="stylesheet" href="css/ios.css">
+  <link rel="stylesheet" href="css/design-system.css">
   <script>
     (function () {
+      try {
+        var saved = JSON.parse(localStorage.getItem('bentofit_settings_v1') || '{}');
+        var preference = saved.theme || 'dark';
+        var effectiveTheme = preference === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+          : preference;
+        document.documentElement.dataset.theme = effectiveTheme;
+        document.documentElement.dataset.themePreference = preference;
+        document.documentElement.dataset.style = saved.uiStyle === 'metamorphism' ? 'metamorphism' : 'bento';
+        document.documentElement.dataset.accent = saved.accent || 'violet';
+      } catch (error) {
+        document.documentElement.dataset.theme = 'dark';
+        document.documentElement.dataset.style = 'bento';
+      }
       function setAppHeight() {
-        document.documentElement.style.setProperty('--app-height', (window.innerHeight || window.screen.height) + 'px');
+        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
       }
       setAppHeight();
       window.addEventListener('resize', setAppHeight);
@@ -40,20 +55,6 @@
         </div>
         <div class="brand-name">Bento<span>Fit</span></div>
       </div>
-
-            <!-- Center Navigation Trigger (Icon only in collapsed state, icon + title + chevron when open) -->
-      <div class="header-nav-center" id="header-nav-center">
-        <button class="header-nav-trigger" id="header-nav-trigger" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Меню навигации">
-          <span class="header-nav-active-icon" id="header-nav-active-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          </span>
-          <span class="header-nav-active-title" id="header-nav-active-title">Главная</span>
-          <svg class="header-nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-      </div>
-
       <div class="header-actions">
         <button class="icon-btn" id="header-unit-btn" aria-label="Сменить единицу веса" title="Сменить единицу веса">
           <span id="header-unit-label" style="font-size:12px; font-weight:800;">КГ</span>
@@ -67,80 +68,7 @@
           </svg>
         </button>
       </div>
-
-      <!-- Dropdown "Стакан", цельный с шапкой (прикреплен к нижнему краю шапки) -->
-      <div class="header-nav-cup" id="header-nav-cup" role="menu" aria-hidden="true">
-        <div class="header-nav-cup-list">
-          <!-- 1. Главная -->
-          <button class="tab-btn active" data-tab="home" role="menuitem">
-            <div class="tab-btn-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            <span class="tab-btn-label">Главная</span>
-            <svg class="tab-btn-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </button>
-
-          <!-- 2. Программы -->
-          <button class="tab-btn" data-tab="templates" role="menuitem">
-            <div class="tab-btn-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-              </svg>
-            </div>
-            <span class="tab-btn-label">Программы</span>
-            <svg class="tab-btn-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </button>
-
-          <!-- 3. Дневник -->
-          <button class="tab-btn" data-tab="analytics" role="menuitem">
-            <div class="tab-btn-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </div>
-            <span class="tab-btn-label">Дневник</span>
-            <svg class="tab-btn-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </button>
-
-          <!-- 4. База -->
-          <button class="tab-btn" data-tab="exercises" role="menuitem">
-            <div class="tab-btn-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-            </div>
-            <span class="tab-btn-label">База</span>
-            <svg class="tab-btn-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </button>
-
-          <!-- 5. Настройки -->
-          <button class="tab-btn" data-tab="profile" role="menuitem">
-            <div class="tab-btn-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </div>
-            <span class="tab-btn-label">Настройки</span>
-            <svg class="tab-btn-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </button>
-        </div>
-      </div>
     </header>
-
-    <!-- Backdrop for dropdown navigation -->
-    <div class="header-nav-backdrop" id="header-nav-backdrop" aria-hidden="true"></div>
 
     <!-- Main Content Views -->
     <main class="main-content">
@@ -300,10 +228,19 @@
 
           <!-- Theme -->
           <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Стиль интерфейса</label>
+            <div class="segmented-control" id="settings-style-control" aria-label="Стиль интерфейса">
+              <button class="segment-item" data-style="metamorphism" aria-pressed="false">Metamorphism</button>
+              <button class="segment-item active" data-style="bento" aria-pressed="true">Bento</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px;">
             <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Тема оформления</label>
-            <div class="segmented-control" id="settings-theme-control">
-              <button class="segment-item active" data-theme="dark">Тёмная (Dark Soft)</button>
-              <button class="segment-item" data-theme="light">Светлая (Light Soft)</button>
+            <div class="segmented-control" id="settings-theme-control" aria-label="Тема оформления">
+              <button class="segment-item active" data-theme="dark" aria-pressed="true">Тёмная</button>
+              <button class="segment-item" data-theme="light" aria-pressed="false">Светлая</button>
+              <button class="segment-item" data-theme="system" aria-pressed="false">Система</button>
             </div>
           </div>
 
@@ -311,12 +248,12 @@
           <div style="margin-bottom: 16px;">
             <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Цветовой акцент</label>
             <div style="display: flex; gap: 10px; justify-content: space-between;" id="settings-accent-picker">
-              <button class="accent-color-circle active" data-accent="violet" style="background:#8b5cf6;" title="Аметист"></button>
-              <button class="accent-color-circle" data-accent="cyan" style="background:#06b6d4;" title="Сапфир"></button>
-              <button class="accent-color-circle" data-accent="emerald" style="background:#10b981;" title="Изумруд"></button>
-              <button class="accent-color-circle" data-accent="coral" style="background:#f97316;" title="Коралл"></button>
-              <button class="accent-color-circle" data-accent="rose" style="background:#f43f5e;" title="Роза"></button>
-              <button class="accent-color-circle" data-accent="amber" style="background:#f59e0b;" title="Янтарь"></button>
+              <button class="accent-color-circle active" data-accent="violet" style="background:#9b8dbd;" title="Аметист" aria-label="Аметист"></button>
+              <button class="accent-color-circle" data-accent="cyan" style="background:#77a9b4;" title="Сапфир" aria-label="Сапфир"></button>
+              <button class="accent-color-circle" data-accent="emerald" style="background:#83aa91;" title="Изумруд" aria-label="Изумруд"></button>
+              <button class="accent-color-circle" data-accent="coral" style="background:#ca9382;" title="Коралл" aria-label="Коралл"></button>
+              <button class="accent-color-circle" data-accent="rose" style="background:#bf8f9d;" title="Роза" aria-label="Роза"></button>
+              <button class="accent-color-circle" data-accent="amber" style="background:#c1a36e;" title="Янтарь" aria-label="Янтарь"></button>
             </div>
           </div>
 
@@ -358,21 +295,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Cache & System Management -->
-        <div class="bento-card bento-col-2" style="margin-bottom: 24px;">
-          <span class="bento-card-tag accent" style="margin-bottom: 12px;">Система и кэш</span>
-          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Очистка кэша обновит файлы приложения до последней версии. Ваши сохранённые тренировки, программы и замеры не будут удалены.</p>
-          <button class="btn btn-secondary btn-block" id="btn-clear-app-cache">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-              <path d="M3 3v5h5"/>
-              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-              <path d="M16 16h5v5"/>
-            </svg>
-            Очистить кэш
-          </button>
-        </div>
       </section>
     </main>
 
@@ -398,7 +320,53 @@
       </div>
     </div>
 
-    
+    <!-- Bottom Tab Navigation Bar -->
+    <nav class="bottom-tab-bar">
+      <button class="tab-btn active" data-tab="home">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Главная</span>
+      </button>
+
+      <button class="tab-btn" data-tab="templates">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Программы</span>
+      </button>
+
+      <button class="tab-btn" data-tab="exercises">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">База</span>
+      </button>
+
+      <button class="tab-btn" data-tab="analytics">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Дневник</span>
+      </button>
+
+      <button class="tab-btn" data-tab="profile">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <span class="tab-btn-label">Настройки</span>
+      </button>
+    </nav>
 
     <!-- FULLSCREEN ACTIVE WORKOUT SCREEN -->
     <div id="active-workout-screen" class="active-workout-screen hidden">
@@ -426,6 +394,7 @@
             <strong id="workout-exercises-ticker">0</strong>
           </div>
         </div>
+        <button class="workout-next-button" id="btn-workout-next-exercise" type="button">Следующее упражнение <span aria-hidden="true">↓</span></button>
       </div>
 
       <div class="workout-body-scroll" id="workout-exercises-container">

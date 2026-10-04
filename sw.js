@@ -1,5 +1,5 @@
 // BentoFit Service Worker - Offline First
-const CACHE_NAME = 'bentofit-cache-v6';
+const CACHE_NAME = 'bentofit-cache-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS_TO_CACHE = [
   './css/themes.css',
   './css/bento.css',
   './css/ios.css',
+  './css/design-system.css',
   './js/exercises-data.js',
   './js/storage.js',
   './js/audio.js',
@@ -32,7 +33,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key.startsWith('bentofit-cache-') && key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
