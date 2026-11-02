@@ -11,6 +11,9 @@
     editingExerciseId: null,
     exercisePickerTarget: 'workout',
     selectedExerciseCategory: 'all',
+    selectedGear: 'all',
+    selectedExerciseGoal: 'all',
+    selectedGoal: 'mass',
     searchQuery: '',
   };
 
@@ -70,10 +73,9 @@
         : preference;
       document.documentElement.setAttribute('data-theme', effectiveTheme);
       document.documentElement.setAttribute('data-theme-preference', preference);
-      document.documentElement.setAttribute('data-style', settings.uiStyle === 'metamorphism' ? 'metamorphism' : 'bento');
-      document.documentElement.setAttribute('data-accent', settings.accent || 'violet');
+      document.documentElement.setAttribute('data-accent', settings.accent || 'amber');
       const themeColor = document.querySelector('meta[name="theme-color"]');
-      if (themeColor) themeColor.setAttribute('content', effectiveTheme === 'dark' ? '#171d29' : '#f3f2ed');
+      if (themeColor) themeColor.setAttribute('content', effectiveTheme === 'dark' ? '#1d1f23' : '#e3e4e1');
 
       const sunIcon = document.getElementById('theme-icon-sun');
       const moonIcon = document.getElementById('theme-icon-moon');
@@ -102,7 +104,7 @@
       const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       window.BentoStorage.saveSettings({ theme: newTheme });
       this.applySavedThemeAndAccent();
-      this.showToast(`Тема переключена на ${newTheme === 'dark' ? 'Тёмную' : 'Светлую'}`);
+      
     },
 
     toggleUnit: function () {
@@ -127,7 +129,7 @@
       document.querySelectorAll('.accent-color-circle').forEach((btn) => {
         btn.classList.toggle('active', btn.getAttribute('data-accent') === accentName);
       });
-      this.showToast('Цветовой акцент обновлен');
+      this.showToast('Цвет изменён');
     },
 
     // ----------------------------------------------------
@@ -238,6 +240,69 @@
     // ----------------------------------------------------
     // 1. HOME BENTO DASHBOARD RENDERER
     // ----------------------------------------------------
+    // Exercise drawing: built-in figures, then a custom exercise's own icon, then a plain plate.
+    exerciseArt: function (ex, mode) {
+      if (ex && window.BentoFigures.has(ex.id)) {
+        return window.BentoFigures.svg(ex.id, mode || 'motion', `Техника: ${this.escapeHtml(ex.name)}`);
+      }
+      const custom = ex ? this.sanitizeSvgMarkup(ex.svgIcon) : '';
+      return `<div class="fig-fallback">${custom || '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="50" cy="50" r="9" fill="currentColor"/></svg>'}</div>`;
+    },
+
+    pluralRu: function (n, one, few, many) {
+      const a = Math.abs(n) % 100;
+      const b = a % 10;
+      if (a > 10 && a < 20) return many;
+      if (b > 1 && b < 5) return few;
+      if (b === 1) return one;
+      return many;
+    },
+
+    estimateMinutes: function (template) {
+      const seconds = (template.exercises || []).reduce((sum, e) => {
+        const sets = e.targetSets || 3;
+        const rest = e.restSeconds === undefined || e.restSeconds === null ? 90 : e.restSeconds;
+        const ex = window.BentoStorage.getExerciseById(e.exerciseId);
+        const work = ex && ex.timed ? (e.targetReps || 40) : 40;
+        return sum + sets * (work + rest);
+      }, 0);
+      return Math.max(5, Math.round(seconds / 300) * 5);
+    },
+
+    templateSummary: function (template) {
+      const count = template.exercises.length;
+      const sets = template.exercises.reduce((sum, e) => sum + (e.targetSets || 3), 0);
+      return `${count} ${this.pluralRu(count, 'упражнение', 'упражнения', 'упражнений')}, ${sets} ${this.pluralRu(sets, 'подход', 'подхода', 'подходов')}, около ${this.estimateMinutes(template)} мин`;
+    },
+
+    // This week drawn as a loaded bar: one plate per finished workout, dashed slots for the rest of the goal.
+    renderWeekBarSvg: function (done, goal) {
+      const colours = ['--plate-red', '--plate-blue', '--plate-yellow', '--plate-green', '--plate-white'];
+      const heights = [80, 74, 66, 56, 46];
+      const slots = Math.min(14, Math.max(goal, done));
+      const width = Math.min(26, 250 / slots);
+      const gap = 2;
+      const startX = 60;
+      let plates = '';
+      for (let i = 0; i < slots; i++) {
+        const x = startX + i * (width + gap);
+        const idx = i % colours.length;
+        const h = heights[idx];
+        const y = 46 - h / 2;
+        if (i < done) {
+          plates += `<rect x="${x}" y="${y}" width="${width}" height="${h}" rx="3" fill="var(${colours[idx]})"/>`;
+          plates += `<rect class="plate-rim" x="${x}" y="${y + h / 2 - 7}" width="${width}" height="14"/>`;
+        } else {
+          plates += `<rect class="slot" x="${x + 0.75}" y="${y + 0.75}" width="${width - 1.5}" height="${h - 1.5}" rx="3"/>`;
+        }
+      }
+      return `<svg class="week-bar" viewBox="0 0 360 92" preserveAspectRatio="xMinYMid meet" role="img" aria-label="Выполнено ${done} из ${goal}">
+        <rect class="sleeve" x="0" y="42" width="360" height="8"/>
+        <rect class="sleeve" x="46" y="30" width="10" height="32" rx="2"/>
+        ${plates}
+      </svg>`;
+    },
+
     renderHomeBento: function () {
       const container = document.getElementById('home-bento-container');
       if (!container) return;
@@ -251,437 +316,391 @@
       let latestWeightStr = '--';
       if (metrics.logs && metrics.logs.length > 0) {
         const lastLog = metrics.logs[metrics.logs.length - 1];
-        const converted = window.BentoStorage.convertWeight(lastLog.weight, unit);
-        latestWeightStr = `${converted} ${unit}`;
+        latestWeightStr = `${window.BentoStorage.convertWeight(lastLog.weight, unit)}`;
       }
 
       const now = new Date();
-      const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-      const dateStrRaw = now.toLocaleDateString('ru-RU', dateOptions);
+      const dateStrRaw = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
       const dateStr = dateStrRaw.charAt(0).toUpperCase() + dateStrRaw.slice(1);
 
       let html = '';
 
-      // TILE A: Active Workout Banner (if currently running)
       if (AppState.activeWorkout) {
         const totalSets = this.countTotalSets(AppState.activeWorkout);
         const compSets = this.countCompletedSets(AppState.activeWorkout);
-        const exCount = AppState.activeWorkout.exercises ? AppState.activeWorkout.exercises.length : 0;
-
         html += `
-          <div class="bento-card bento-active-card clickable" id="home-resume-workout-card">
-            <div class="bento-card-header">
-              <span class="bento-card-tag" style="color: var(--success);">
-                <span class="pulse-indicator"></span> ИДЁТ ТРЕНИРОВКА
-              </span>
-              <span style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--success);" id="home-active-duration">
-                ${this.formatDuration(AppState.activeWorkout.elapsedSeconds || 0)}
-              </span>
-            </div>
-            <div class="bento-card-title">${this.escapeHtml(AppState.activeWorkout.title)}</div>
-            <div class="bento-card-subtitle" style="margin-bottom: 12px;">
-              Завершено сетов: <strong>${compSets}/${totalSets}</strong> • Упражнений: <strong>${exCount}</strong>
-            </div>
-            <button class="btn btn-primary btn-sm btn-block" style="background:var(--success); color:var(--background); border:none; box-shadow: var(--shadow-accent);" id="btn-home-resume">
-              Возобновить тренировку
-            </button>
-          </div>
+          <button class="active-banner" id="home-resume-workout-card">
+            <span>
+              <strong>${this.escapeHtml(AppState.activeWorkout.title)}</strong>
+              Продолжить: ${compSets} из ${totalSets} подходов
+            </span>
+            <time id="home-active-duration">${this.formatDuration(AppState.activeWorkout.elapsedSeconds || 0)}</time>
+          </button>
         `;
       }
 
-      // TILE B: Hero Scheduled Workout for Today
+      const heroName = (name) => this.escapeHtml(name);
       if (!scheduleInfo.isRest && scheduleInfo.template) {
+        const tpl = scheduleInfo.template;
+        const titleClass = tpl.name.length > 14 ? 'hero-title is-long' : 'hero-title';
         html += `
-          <div class="bento-card bento-hero-card">
-            <div class="bento-hero-top">
-              <div>
-                <span class="bento-card-tag accent">План на сегодня</span>
-                <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">${dateStr}</div>
-              </div>
-              <span class="bento-badge-pill">День ${scheduleInfo.cycleDay} из ${scheduleInfo.cycleTotalDays}</span>
+          <section class="hero">
+            <div class="hero-date">${dateStr}</div>
+            <h1 class="${titleClass}">${heroName(tpl.name)}</h1>
+            <p class="hero-meta">${this.escapeHtml(this.templateSummary(tpl))}</p>
+            <div class="hero-figure" id="home-hero-figure"></div>
+            <button class="btn btn-primary btn-go" id="btn-start-scheduled-workout" data-template-id="${this.escapeHtml(tpl.id)}">Начать тренировку</button>
+            <div class="hero-links">
+              <button class="text-btn" id="btn-home-preview" data-template-id="${this.escapeHtml(tpl.id)}">Что сегодня делаем</button>
+              <button class="text-btn" id="btn-home-quick-free">Своя тренировка</button>
             </div>
-            <div class="bento-card-title" style="font-size: 20px;">${this.escapeHtml(scheduleInfo.template.name)}</div>
-            <div class="bento-card-subtitle">
-              ${scheduleInfo.template.exercises.length} упражнений • ${this.escapeHtml(scheduleInfo.template.description || 'Силовая тренировка')}
-            </div>
-            <button class="btn btn-primary btn-block bento-hero-btn" id="btn-start-scheduled-workout" data-template-id="${this.escapeHtml(scheduleInfo.template.id)}">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Начать запланированную тренировку
-            </button>
-          </div>
+          </section>
         `;
       } else {
+        const next = scheduleInfo.nextTemplate;
         html += `
-          <div class="bento-card bento-hero-card">
-            <div class="bento-hero-top">
-              <div>
-                <span class="bento-card-tag accent">Сегодня по плану</span>
-                <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">${dateStr}</div>
-              </div>
-              <span class="bento-badge-pill rest">День отдыха</span>
+          <section class="hero">
+            <div class="hero-date">${dateStr}</div>
+            <h1 class="hero-title">Отдых</h1>
+            <p class="hero-meta">Мышцы растут между тренировками.${next ? ` Следующая через ${scheduleInfo.daysUntilNext} ${this.pluralRu(scheduleInfo.daysUntilNext, 'день', 'дня', 'дней')}: ${this.escapeHtml(next.name)}.` : ''}</p>
+            <div class="hero-links">
+              <button class="text-btn" id="btn-home-quick-free">Всё равно потренироваться</button>
+              <button class="text-btn" id="btn-home-browse-templates">Сменить программу</button>
             </div>
-            <div class="bento-card-title" style="font-size: 20px;">Восстановление и отдых 🧘</div>
-            <div class="bento-card-subtitle">
-              Мышцы растут во время отдыха.
-              ${scheduleInfo.nextTemplate ? `<br>Следующая: <strong>${this.escapeHtml(scheduleInfo.nextTemplate.name)}</strong> через ${scheduleInfo.daysUntilNext} дн.` : ''}
-            </div>
-            <button class="btn btn-secondary btn-block bento-hero-btn" id="btn-home-free-start">
-              ⚡ Тренироваться вне плана
-            </button>
-          </div>
+          </section>
         `;
       }
 
-      // TILE C: Weekly Goal Progress Tile
+      const left = Math.max(0, stats.weeklyGoal - stats.weeklyCompleted);
       html += `
-        <div class="bento-card bento-col-2">
-          <div class="bento-card-header">
-            <span class="bento-card-tag accent">Недельная цель</span>
-            <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">${stats.weeklyCompleted} из ${this.escapeHtml(stats.weeklyGoal)} тренировок</span>
+        <div class="tile week-tile">
+          <div class="week-head">
+            <span class="week-title">${stats.weeklyCompleted} из ${this.escapeHtml(stats.weeklyGoal)} за неделю</span>
+            <span class="small muted">${left === 0 ? 'Цель взята' : `Осталось ${left}`}</span>
           </div>
-          <div class="bento-card-title" style="font-size: 18px;">
-            ${stats.weeklyCompleted >= stats.weeklyGoal ? 'Цель на неделю достигнута! 🔥' : `Осталось тренировок: ${Math.max(0, stats.weeklyGoal - stats.weeklyCompleted)}`}
-          </div>
-          <div class="bento-progress-bar-wrap">
-            <div class="bento-progress-bar-fill" style="width: ${stats.weeklyPercent}%;"></div>
-          </div>
-          <div style="display:flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary);">
-            <span>Пн</span>
-            <span>${stats.weeklyPercent}% выполнено</span>
-            <span>Вс</span>
-          </div>
+          ${this.renderWeekBarSvg(stats.weeklyCompleted, stats.weeklyGoal)}
         </div>
       `;
 
-      // TILE D: Total Workouts Count
-      html += `
-        <div class="bento-card bento-col-1">
-          <div class="bento-card-header">
-            <span class="bento-card-tag">Тренировки</span>
-            <div class="bento-card-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-          </div>
-          <div class="bento-stat-num">${stats.totalWorkouts}</div>
-          <div class="bento-card-subtitle">Всего завершено</div>
-        </div>
-      `;
+      // Next days in the cycle
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + i);
+        const info = window.BentoSchedule.getScheduleForDate(d);
+        const label = d.toLocaleDateString('ru-RU', { weekday: 'short' });
+        const name = info.isRest ? 'отдых' : (info.template ? (info.template.short || info.template.name.split(':')[0]) : '');
+        days.push(`<div class="strip-day ${info.isRest ? 'is-rest' : ''} ${i === 0 ? 'is-today' : ''}"><b>${d.getDate()}</b>${this.escapeHtml(label)}<span>${this.escapeHtml(name)}</span></div>`);
+      }
+      html += `<div class="section-header"><h2 class="section-title">Неделя вперёд</h2><button class="text-btn" id="btn-home-programs">Программы</button></div><div class="strip">${days.join('')}</div>`;
 
-      // TILE E: Total Completed Sets Count
-      html += `
-        <div class="bento-card bento-col-1">
-          <div class="bento-card-header">
-            <span class="bento-card-tag">Подходы</span>
-            <div class="bento-card-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-          </div>
-          <div class="bento-stat-num">${stats.totalCompletedSets}</div>
-          <div class="bento-card-subtitle">Выполнено сетов</div>
-        </div>
-      `;
-
-      // TILE F: Last Workout Summary
+      html += '<div class="bento-grid" style="margin-top: 8px;">';
       if (stats.lastWorkout) {
         const lastDate = new Date(stats.lastWorkout.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
         html += `
-          <div class="bento-card bento-col-1 clickable" id="home-last-workout-card" data-workout-id="${this.escapeHtml(stats.lastWorkout.id)}">
-            <div class="bento-card-header">
-              <span class="bento-card-tag">Прошлая</span>
-              <div class="bento-card-icon" style="background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-            </div>
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              ${this.escapeHtml(stats.lastWorkout.title)}
-            </div>
-            <div class="bento-card-subtitle" style="margin-top: 4px;">
-              ${lastDate} • <strong>${this.escapeHtml(stats.lastWorkout.completedSets || 0)} сетов</strong>
-            </div>
-          </div>
+          <button class="tile tile-btn" id="home-last-workout-card" data-workout-id="${this.escapeHtml(stats.lastWorkout.id)}">
+            <span class="tile-label">Прошлая, ${lastDate}</span>
+            <span class="tile-name">${this.escapeHtml(stats.lastWorkout.title)}</span>
+            <span class="tile-sub">${this.escapeHtml(stats.lastWorkout.completedSets || 0)} подходов</span>
+          </button>
         `;
       } else {
-        html += `
-          <div class="bento-card bento-col-1">
-            <div class="bento-card-header">
-              <span class="bento-card-tag">Прошлая</span>
-            </div>
-            <div class="bento-card-subtitle">Пока нет записей</div>
-          </div>
-        `;
+        html += `<div class="tile"><span class="tile-label">Всего тренировок</span><div class="tile-num">${stats.totalWorkouts}</div></div>`;
       }
-
-      // TILE G: Current Body Weight
       html += `
-        <div class="bento-card bento-col-1 clickable" id="home-weight-tile">
-          <div class="bento-card-header">
-            <span class="bento-card-tag">Вес тела</span>
-            <div class="bento-card-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-          </div>
-          <div class="bento-stat-num" style="font-size: 22px;">${this.escapeHtml(latestWeightStr)}</div>
-          <div class="bento-card-subtitle">Нажмите для замера</div>
-        </div>
-      `;
-
-      // TILE H: Quick Action Buttons
-      html += `
-        <div class="bento-action-tile bento-col-2" id="btn-home-quick-free">
-          <div class="bento-action-tile-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <div class="bento-action-tile-text">
-            <div class="bento-action-tile-title">Свободная тренировка</div>
-            <div class="bento-action-tile-sub">Быстрый старт с добавлением любых упражнений на лету</div>
-          </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-
-        <div class="bento-action-tile bento-col-2" id="btn-home-browse-templates">
-          <div class="bento-action-tile-icon" style="background: color-mix(in srgb, var(--secondary-accent) 14%, transparent); color: var(--secondary-accent);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          </div>
-          <div class="bento-action-tile-text">
-            <div class="bento-action-tile-title">Выбрать готовую программу</div>
-            <div class="bento-action-tile-sub">Каталог шаблонов: Push/Pull/Legs и конструктор</div>
-          </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      `;
+        <button class="tile tile-btn" id="home-weight-tile">
+          <span class="tile-label">Вес тела</span>
+          <span class="tile-num">${this.escapeHtml(latestWeightStr)} <span class="bento-stat-unit">${this.escapeHtml(unit)}</span></span>
+          <span class="tile-sub">Добавить замер</span>
+        </button>
+      </div>`;
 
       container.innerHTML = html;
 
-      // Bind Home Card Events
-      const btnStartScheduled = document.getElementById('btn-start-scheduled-workout');
-      if (btnStartScheduled) {
-        btnStartScheduled.addEventListener('click', () => {
-          const tplId = btnStartScheduled.getAttribute('data-template-id');
-          this.startWorkoutFromTemplate(tplId);
-        });
+      if (!scheduleInfo.isRest && scheduleInfo.template && scheduleInfo.template.exercises[0]) {
+        const heroEx = window.BentoStorage.getExerciseById(scheduleInfo.template.exercises[0].exerciseId);
+        const heroBox = document.getElementById('home-hero-figure');
+        if (heroEx && window.BentoFigures.has(heroEx.id)) {
+          window.BentoFigures.mount(heroBox, heroEx.id, `Первое упражнение: ${heroEx.name}`);
+        } else if (heroBox) {
+          heroBox.remove();
+        }
       }
 
-      const btnHomeFree = document.getElementById('btn-home-free-start');
-      if (btnHomeFree) {
-        btnHomeFree.addEventListener('click', () => this.startFreeWorkout());
-      }
-
-      const btnHomeQuickFree = document.getElementById('btn-home-quick-free');
-      if (btnHomeQuickFree) {
-        btnHomeQuickFree.addEventListener('click', () => this.startFreeWorkout());
-      }
-
-      const btnHomeBrowse = document.getElementById('btn-home-browse-templates');
-      if (btnHomeBrowse) {
-        btnHomeBrowse.addEventListener('click', () => this.switchTab('templates'));
-      }
-
-      const homeResume = document.getElementById('home-resume-workout-card');
-      if (homeResume) {
-        homeResume.addEventListener('click', () => this.openActiveWorkoutScreen());
-      }
-
-      const homeLastWorkout = document.getElementById('home-last-workout-card');
-      if (homeLastWorkout) {
-        homeLastWorkout.addEventListener('click', () => {
-          const wId = homeLastWorkout.getAttribute('data-workout-id');
-          this.openPastWorkoutModal(wId);
-        });
-      }
-
-      const homeWeightTile = document.getElementById('home-weight-tile');
-      if (homeWeightTile) {
-        homeWeightTile.addEventListener('click', () => this.openWeightModal());
-      }
+      const on = (id, fn) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', () => fn(el));
+      };
+      on('btn-start-scheduled-workout', (el) => this.startWorkoutFromTemplate(el.getAttribute('data-template-id')));
+      on('btn-home-preview', (el) => this.openDayPreview(el.getAttribute('data-template-id')));
+      on('btn-home-quick-free', () => this.startFreeWorkout());
+      on('btn-home-browse-templates', () => this.switchTab('templates'));
+      on('btn-home-programs', () => this.switchTab('templates'));
+      on('home-resume-workout-card', () => this.openActiveWorkoutScreen());
+      on('home-last-workout-card', (el) => this.openPastWorkoutModal(el.getAttribute('data-workout-id')));
+      on('home-weight-tile', () => this.openWeightModal());
     },
 
     // ----------------------------------------------------
     // 2. TEMPLATES & SCHEDULE ENGINE RENDERER
     // ----------------------------------------------------
+    renderProgramStrip: function (sequence) {
+      const cells = sequence.map((id) => {
+        if (id === 'REST') return '<div class="strip-day is-rest"><span>отдых</span></div>';
+        const t = window.BentoStorage.getTemplateById(id);
+        const name = t ? (t.short || t.name.split(':')[0]) : '';
+        return `<div class="strip-day"><span>${this.escapeHtml(name)}</span></div>`;
+      });
+      return `<div class="strip">${cells.join('')}</div>`;
+    },
+
     renderTemplates: function () {
-      const scheduleContainer = document.getElementById('schedule-cycle-card');
       const listContainer = document.getElementById('templates-list-container');
       if (!listContainer) return;
 
+      const library = window.BENTO_LIBRARY;
       const scheduleConfig = window.BentoStorage.getSchedule();
       const scheduleInfo = window.BentoSchedule.getTodaySchedule();
       const templates = window.BentoStorage.getTemplates();
+      const goal = AppState.selectedGoal;
+      const goalInfo = library.goals.find((g) => g.id === goal) || library.goals[0];
 
-      if (scheduleContainer) {
-        const seqNames = (scheduleConfig.sequence || []).map((id) => {
-          if (id === 'REST') return 'Отдых';
-          const t = window.BentoStorage.getTemplateById(id);
-          return t ? t.name.split(':')[0] : 'Программа';
-        }).join(' → ');
-
-        scheduleContainer.innerHTML = `
-          <div class="bento-hero-top">
-            <div>
-              <span class="bento-card-tag accent">Циклическое расписание</span>
-              <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">
-                Интервал отдыха: ${this.escapeHtml(scheduleConfig.intervalDays || 1)} дн. • День цикла: ${scheduleInfo.cycleDay}/${scheduleInfo.cycleTotalDays}
-              </div>
-            </div>
-            <button class="btn btn-secondary btn-sm" id="btn-edit-schedule-modal">Настроить</button>
-          </div>
-          <div style="font-size: 12px; color: var(--text-secondary); margin: 6px 0 10px 0; word-break: break-word;">
-            <strong>Ротация:</strong> ${this.escapeHtml(seqNames)}
-          </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; background: var(--pill-bg); padding: 8px 12px; border-radius: var(--radius-sm);">
-            <span>Статус на сегодня:</span>
-            <strong style="color: ${scheduleInfo.isRest ? 'var(--text-tertiary)' : 'var(--accent)'};">
-              ${scheduleInfo.isRest ? '🧘 День отдыха' : `🏋️ ${scheduleInfo.template ? this.escapeHtml(scheduleInfo.template.name) : 'Тренировка'}`}
-            </strong>
-          </div>
-        `;
-
-        const btnEditSched = document.getElementById('btn-edit-schedule-modal');
-        if (btnEditSched) {
-          btnEditSched.addEventListener('click', () => this.openScheduleConfigModal());
-        }
-      }
-
-      if (templates.length === 0) {
-        listContainer.innerHTML = `
-          <div style="text-align: center; padding: 30px 20px; color: var(--text-tertiary);">
-            Нет сохранённых программ. Создайте первую программу с помощью кнопки "+ Создать".
-          </div>
-        `;
-        return;
-      }
-
-      listContainer.innerHTML = templates.map((tpl) => {
-        const exNames = tpl.exercises.map((e) => {
-          const exObj = window.BentoStorage.getExerciseById(e.exerciseId);
-          return exObj ? exObj.name : 'Упражнение';
-        }).slice(0, 3).join(', ') + (tpl.exercises.length > 3 ? ' и др.' : '');
-
-        const totalTargetSets = tpl.exercises.reduce((sum, e) => sum + (e.targetSets || 3), 0);
-
-        return `
-          <div class="bento-card bento-col-2">
-            <div class="bento-card-header">
-              <span class="bento-card-tag accent">${tpl.exercises.length} упражнений • ${this.escapeHtml(totalTargetSets)} сетов</span>
-              <div style="display: flex; gap: 6px;">
-                <button class="icon-btn btn-sm btn-edit-template" data-tpl-id="${this.escapeHtml(tpl.id)}" title="Редактировать">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="bento-card-title">${this.escapeHtml(tpl.name)}</div>
-            <div class="bento-card-subtitle" style="margin-bottom: 8px;">${this.escapeHtml(tpl.description || '')}</div>
-            <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 12px;">
-              <strong>Состав:</strong> ${this.escapeHtml(exNames)}
-            </div>
-            <button class="btn btn-primary btn-block btn-sm btn-start-tpl" data-tpl-id="${this.escapeHtml(tpl.id)}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Начать тренировку по программе
-            </button>
-          </div>
-        `;
-      }).join('');
-
-      listContainer.querySelectorAll('.btn-start-tpl').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const tplId = btn.getAttribute('data-tpl-id');
-          this.startWorkoutFromTemplate(tplId);
+      document.getElementById('goal-selector').innerHTML = library.goals.map((g) => `
+        <button class="goal-btn ${g.id === goal ? 'active' : ''}" data-goal="${g.id}" aria-pressed="${g.id === goal}">
+          <span class="goal-plate" data-plate="${g.plate}">${g.kg}</span>
+          ${g.name}
+        </button>
+      `).join('');
+      document.getElementById('goal-intro').textContent = goalInfo.intro;
+      document.querySelectorAll('#goal-selector .goal-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          AppState.selectedGoal = btn.getAttribute('data-goal');
+          this.renderTemplates();
         });
       });
 
+      const programsBox = document.getElementById('programs-list');
+      programsBox.innerHTML = library.programs.filter((p) => p.goal === goal).map((p) => {
+        const isCurrent = scheduleConfig.programId === p.id;
+        const dayIds = p.sequence.filter((id, i, arr) => id !== 'REST' && arr.indexOf(id) === i);
+        const dayRows = dayIds.map((id) => {
+          const t = window.BentoStorage.getTemplateById(id);
+          if (!t) return '';
+          return `<button class="day-row" data-open-day="${this.escapeHtml(id)}"><span>${this.escapeHtml(t.name)}</span><small>${t.exercises.length} упр., ${this.estimateMinutes(t)} мин</small></button>`;
+        }).join('');
+        const sources = p.sources.map((key) => {
+          const s = library.sources[key];
+          return s ? `<a href="${this.escapeHtml(s.url)}" target="_blank" rel="noopener">${this.escapeHtml(s.cite)}</a>` : '';
+        }).join('');
+        const kitNames = { band: 'Резина', handles: 'Упоры', pullbar: 'Турник', dipbars: 'Брусья', none: 'Без инвентаря' };
+        const kit = (p.kit || []).map((k) => `<span class="tag">${kitNames[k]}</span>`).join('');
+        return `
+          <article class="tile program" data-plate="${goalInfo.plate}">
+            <h3 class="program-name">${this.escapeHtml(p.name)}</h3>
+            <p class="program-meta">${p.days} ${this.pluralRu(p.days, 'день', 'дня', 'дней')} в неделю, ${this.escapeHtml(p.level.toLowerCase())} уровень, ${this.escapeHtml(p.place.toLowerCase())}
+              ${isCurrent ? '<span class="badge badge-now">Сейчас в плане</span>' : (p.recommended ? '<span class="badge">С него начать</span>' : '')}</p>
+            ${kit ? `<div class="kit-row">${kit}</div>` : ''}
+            ${this.renderProgramStrip(p.sequence)}
+            <p class="program-why">${this.escapeHtml(p.why)}</p>
+            <div class="source-links">${sources}</div>
+            <div class="program-days">${dayRows}</div>
+            ${isCurrent ? '' : `<button class="btn btn-primary btn-block" data-apply-program="${this.escapeHtml(p.id)}">Сделать моим планом</button>`}
+          </article>
+        `;
+      }).join('');
+      programsBox.querySelectorAll('[data-open-day]').forEach((btn) => {
+        btn.addEventListener('click', () => this.openDayPreview(btn.getAttribute('data-open-day')));
+      });
+      programsBox.querySelectorAll('[data-apply-program]').forEach((btn) => {
+        btn.addEventListener('click', () => this.applyProgram(btn.getAttribute('data-apply-program')));
+      });
+
+      const scheduleContainer = document.getElementById('schedule-cycle-card');
+      if (scheduleContainer) {
+        const current = library.programs.find((p) => p.id === scheduleConfig.programId);
+        scheduleContainer.innerHTML = `
+          <div class="tile-name" style="margin-bottom: 8px;">${current ? this.escapeHtml(current.name) : 'Свой цикл'}</div>
+          ${this.renderProgramStrip(scheduleConfig.sequence || [])}
+          <p class="small muted" style="margin-top: 8px;">Сегодня день ${scheduleInfo.cycleDay} из ${scheduleInfo.cycleTotalDays}: ${scheduleInfo.isRest ? 'отдых' : this.escapeHtml(scheduleInfo.template ? scheduleInfo.template.name : 'тренировка')}.</p>
+        `;
+      }
+
+      const scienceBox = document.getElementById('science-list');
+      if (scienceBox && !scienceBox.childElementCount) {
+        scienceBox.innerHTML = library.principles.map((key) => {
+          const s = library.sources[key];
+          return `<details class="science-item"><summary>${this.escapeHtml(s.title)}</summary><p>${this.escapeHtml(s.text)}<br><a href="${this.escapeHtml(s.url)}" target="_blank" rel="noopener">${this.escapeHtml(s.cite)}</a></p></details>`;
+        }).join('') + '<p class="science-note">Многие исследования небольшие и проведены на молодых людях. Это справка, а не медицинская рекомендация: при болях, травмах или болезнях сначала поговорите с врачом.</p>';
+      }
+
+      if (templates.length === 0) {
+        listContainer.innerHTML = '<div class="empty">Здесь будут ваши тренировки. Создайте свою или измените день из любой программы.</div>';
+        return;
+      }
+
+      listContainer.innerHTML = templates.map((tpl) => `
+        <div class="tile saved-tpl">
+          <div class="bento-card-header" style="margin-bottom: 2px;">
+            <div class="tile-name">${this.escapeHtml(tpl.name)}</div>
+            <button class="icon-btn btn-sm btn-edit-template" data-tpl-id="${this.escapeHtml(tpl.id)}" aria-label="Изменить тренировку">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+            </button>
+          </div>
+          <p class="small muted" style="margin-bottom: 10px;">${this.escapeHtml(this.templateSummary(tpl))}</p>
+          <button class="btn btn-secondary btn-block btn-sm btn-start-tpl" data-tpl-id="${this.escapeHtml(tpl.id)}">Начать</button>
+        </div>
+      `).join('');
+
+      listContainer.querySelectorAll('.btn-start-tpl').forEach((btn) => {
+        btn.addEventListener('click', () => this.startWorkoutFromTemplate(btn.getAttribute('data-tpl-id')));
+      });
       listContainer.querySelectorAll('.btn-edit-template').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const tplId = btn.getAttribute('data-tpl-id');
-          this.openTemplateEditorModal(tplId);
-        });
+        btn.addEventListener('click', () => this.openTemplateEditorModal(btn.getAttribute('data-tpl-id')));
+      });
+    },
+
+    applyProgram: function (programId) {
+      const program = window.BENTO_LIBRARY.programs.find((p) => p.id === programId);
+      if (!program) return;
+      const saved = window.BentoStorage.saveSchedule({
+        startDate: this.getDateStamp(),
+        intervalDays: 1,
+        sequence: program.sequence.slice(),
+        programId: program.id,
+      });
+      if (!saved || !window.BentoStorage.saveSettings({ weeklyGoal: program.days })) {
+        this.showToast('Не удалось сохранить план');
+        return;
+      }
+      this.renderTemplates();
+      this.renderHomeBento();
+      this.renderProfile();
+      this.showToast(`В плане: ${program.name}`);
+    },
+
+    formatTarget: function (item) {
+      const sets = item.targetSets || (item.sets ? item.sets.length : 3);
+      return item.repRange ? `${sets} × ${item.repRange}` : `${sets} × ${item.targetReps || 10}`;
+    },
+
+    openDayPreview: function (templateId) {
+      const tpl = window.BentoStorage.getTemplateById(templateId);
+      if (!tpl) return;
+      const modal = document.getElementById('day-preview-modal');
+      document.getElementById('day-preview-title').textContent = tpl.name;
+      const body = document.getElementById('day-preview-body');
+      const rows = tpl.exercises.map((item, idx) => {
+        const ex = window.BentoStorage.getExerciseById(item.exerciseId);
+        const prevGroup = idx > 0 ? tpl.exercises[idx - 1].group : null;
+        const groupLabel = item.group && item.group !== prevGroup ? `<div class="group-tag" style="margin: 6px 0 2px;">Без отдыха между упражнениями группы</div>` : '';
+        const rest = item.restSeconds ? `отдых ${item.restSeconds} с` : '';
+        return `${groupLabel}<button class="ex-row" data-ex-id="${this.escapeHtml(item.exerciseId)}">
+          ${this.exerciseArt(ex)}
+          <span class="ex-row-name">${this.escapeHtml(ex ? ex.name : 'Упражнение')}</span>
+          <span class="ex-row-sets">${this.escapeHtml(this.formatTarget(item))}<small>${rest}</small></span>
+        </button>`;
+      }).join('');
+      body.innerHTML = `
+        <p class="small muted" style="margin-bottom: 10px;">${this.escapeHtml(tpl.description || '')} ${this.escapeHtml(this.templateSummary(tpl))}.</p>
+        <div class="row-list" style="margin-bottom: 14px;">${rows}</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btn-day-start">Начать</button>
+          <button class="btn btn-secondary" id="btn-day-edit" style="flex: none;">Изменить</button>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+      body.querySelectorAll('.ex-row').forEach((row) => {
+        row.addEventListener('click', () => this.openExerciseDetailModal(row.getAttribute('data-ex-id')));
+      });
+      document.getElementById('btn-day-start').addEventListener('click', () => {
+        modal.classList.add('hidden');
+        this.startWorkoutFromTemplate(templateId);
+      });
+      document.getElementById('btn-day-edit').addEventListener('click', () => {
+        modal.classList.add('hidden');
+        this.openTemplateEditorModal(templateId);
       });
     },
 
     bindTemplatesAndSchedule: function () {
-      const btnCreateTpl = document.getElementById('btn-create-template');
-      if (btnCreateTpl) {
-        btnCreateTpl.addEventListener('click', () => this.openTemplateEditorModal(null));
-      }
-      const btnQuickFree = document.getElementById('btn-quick-free-workout');
-      if (btnQuickFree) {
-        btnQuickFree.addEventListener('click', () => this.startFreeWorkout());
-      }
-      const btnCloseTplEditor = document.getElementById('btn-close-tpl-editor');
-      if (btnCloseTplEditor) {
-        btnCloseTplEditor.addEventListener('click', () => this.closeTemplateEditorModal());
-      }
-      const btnSaveTpl = document.getElementById('btn-save-template');
-      if (btnSaveTpl) {
-        btnSaveTpl.addEventListener('click', () => this.saveTemplateFromEditor());
-      }
-      const btnDeleteTpl = document.getElementById('btn-delete-template');
-      if (btnDeleteTpl) {
-        btnDeleteTpl.addEventListener('click', () => this.deleteTemplateFromEditor());
-      }
-      const btnCloseSched = document.getElementById('btn-close-sched-modal');
-      if (btnCloseSched) {
-        btnCloseSched.addEventListener('click', () => this.closeScheduleConfigModal());
-      }
-      const btnSaveSched = document.getElementById('btn-save-schedule-config');
-      if (btnSaveSched) {
-        btnSaveSched.addEventListener('click', () => this.saveScheduleConfig());
-      }
+      const currentProgram = window.BENTO_LIBRARY.programs.find((p) => p.id === window.BentoStorage.getSchedule().programId);
+      AppState.selectedGoal = currentProgram ? currentProgram.goal : 'mass';
+
+      const clicks = {
+        'btn-create-template': () => this.openTemplateEditorModal(null),
+        'btn-edit-schedule-modal': () => this.openScheduleConfigModal(),
+        'btn-close-tpl-editor': () => this.closeTemplateEditorModal(),
+        'btn-save-template': () => this.saveTemplateFromEditor(),
+        'btn-delete-template': () => this.deleteTemplateFromEditor(),
+        'btn-close-sched-modal': () => this.closeScheduleConfigModal(),
+        'btn-save-schedule-config': () => this.saveScheduleConfig(),
+        'btn-close-day-preview': () => document.getElementById('day-preview-modal').classList.add('hidden'),
+      };
+      Object.keys(clicks).forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', clicks[id]);
+      });
     },
 
     // ----------------------------------------------------
     // 3. EXERCISE CATALOG RENDERER & ACTIONS
     // ----------------------------------------------------
+    renderExerciseFilters: function () {
+      const build = (id, options, current) => {
+        const box = document.getElementById(id);
+        if (!box) return;
+        box.innerHTML = options.map((o) => `<button class="chip ${o[0] === current ? 'active' : ''}" data-value="${o[0]}" aria-pressed="${o[0] === current}">${o[1]}</button>`).join('');
+      };
+      build('muscle-filter-control', [['all', 'Все мышцы'], ['chest', 'Грудь'], ['back', 'Спина'], ['legs', 'Ноги'], ['shoulders', 'Плечи'], ['arms', 'Руки'], ['core', 'Кор'], ['cardio', 'Кардио']], AppState.selectedExerciseCategory);
+      build('gear-filter-control', [['all', 'Любой инвентарь'], ['home', 'Для дома'], ['gym', 'Для зала'], ['band', 'Резина'], ['handles', 'Упоры'], ['pullbar', 'Турник'], ['dipbars', 'Брусья'], ['none', 'Без инвентаря']], AppState.selectedGear);
+      build('goal-filter-control', [['all', 'Любая цель'], ['mass', 'Масса'], ['strength', 'Сила'], ['fat', 'Похудение'], ['beginner', 'Новичкам'], ['proven', 'С исследованиями']], AppState.selectedExerciseGoal);
+    },
+
     renderExercises: function () {
       const container = document.getElementById('exercises-catalog-container');
       if (!container) return;
 
+      this.renderExerciseFilters();
       const exercises = window.BentoStorage.getExercises();
       const category = AppState.selectedExerciseCategory;
+      const gear = AppState.selectedGear;
+      const goal = AppState.selectedExerciseGoal;
       const query = (AppState.searchQuery || '').toLowerCase().trim();
+      const HOME_GEAR = ['band', 'handles', 'pullbar', 'dipbars', 'none'];
 
       const filtered = exercises.filter((ex) => {
+        const kit = ex.gear || [];
+        const matchesGear = gear === 'all'
+          || (gear === 'home' && kit.some((g) => HOME_GEAR.indexOf(g) >= 0))
+          || (gear === 'gym' && kit.some((g) => HOME_GEAR.indexOf(g) < 0))
+          || kit.indexOf(gear) >= 0;
+        const matchesGoal = goal === 'all' || (goal === 'proven' ? !!ex.evidence : (ex.goals || []).indexOf(goal) >= 0);
         const matchesCategory = category === 'all' || ex.category === category;
         const matchesQuery = !query ||
           ex.name.toLowerCase().includes(query) ||
           (ex.nameEn && ex.nameEn.toLowerCase().includes(query)) ||
           (ex.targetMuscles && ex.targetMuscles.some((m) => m.toLowerCase().includes(query)));
-        return matchesCategory && matchesQuery;
+        return matchesCategory && matchesQuery && matchesGear && matchesGoal;
       });
 
+      const count = document.getElementById('catalog-count');
+      if (count) count.textContent = `${filtered.length} ${this.pluralRu(filtered.length, 'упражнение', 'упражнения', 'упражнений')}`;
+
       if (filtered.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; color: var(--text-tertiary);">
-            Упражнения не найдены. Попробуйте изменить поисковый запрос или фильтр мышечной группы.
-          </div>
-        `;
+        container.innerHTML = '<div class="empty" style="grid-column: span 2;">Ничего не нашлось. Уберите один из фильтров или измените запрос.</div>';
         return;
       }
 
-      container.innerHTML = filtered.map((ex) => {
-        const musclesList = (ex.targetMuscles || []).join(', ');
-        return `
-          <div class="catalog-item-card" data-ex-id="${this.escapeHtml(ex.id)}">
-            <div class="catalog-item-svg">
-              ${this.sanitizeSvgMarkup(ex.svgIcon)}
-            </div>
-            <div class="catalog-item-info">
-              <div class="catalog-item-name">${this.escapeHtml(ex.name)}</div>
-              <div class="catalog-item-meta">
-                <span class="category-tag">${this.escapeHtml(ex.categoryName || ex.category)}</span>
-                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">${this.escapeHtml(musclesList)}</span>
-              </div>
-            </div>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2" style="flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        `;
-      }).join('');
+      container.innerHTML = filtered.map((ex) => `
+        <button class="ex-card" data-ex-id="${this.escapeHtml(ex.id)}">
+          ${this.exerciseArt(ex)}
+          <span class="ex-card-name">${this.escapeHtml(ex.name)}</span>
+          <span class="ex-card-meta">${ex.evidence ? '<i class="ev-dot" title="Есть исследования"></i>' : ''}${this.escapeHtml((ex.targetMuscles || [])[0] || ex.categoryName || '')}</span>
+        </button>
+      `).join('');
 
-      container.querySelectorAll('.catalog-item-card').forEach((card) => {
-        card.addEventListener('click', () => {
-          const exId = card.getAttribute('data-ex-id');
-          this.openExerciseDetailModal(exId);
-        });
+      container.querySelectorAll('.ex-card').forEach((card) => {
+        card.addEventListener('click', () => this.openExerciseDetailModal(card.getAttribute('data-ex-id')));
       });
     },
 
@@ -694,17 +713,19 @@
         });
       }
 
-      const filterControl = document.getElementById('muscle-filter-control');
-      if (filterControl) {
-        filterControl.querySelectorAll('.segment-item').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            filterControl.querySelectorAll('.segment-item').forEach((b) => b.classList.remove('active'));
-            btn.classList.add('active');
-            AppState.selectedExerciseCategory = btn.getAttribute('data-category');
-            this.renderExercises();
-          });
+      const chipFilter = (id, key) => {
+        const box = document.getElementById(id);
+        if (!box) return;
+        box.addEventListener('click', (e) => {
+          const chip = e.target.closest('.chip');
+          if (!chip) return;
+          AppState[key] = chip.getAttribute('data-value');
+          this.renderExercises();
         });
-      }
+      };
+      chipFilter('muscle-filter-control', 'selectedExerciseCategory');
+      chipFilter('gear-filter-control', 'selectedGear');
+      chipFilter('goal-filter-control', 'selectedExerciseGoal');
 
       const btnCreateEx = document.getElementById('btn-create-exercise');
       if (btnCreateEx) {
@@ -773,90 +794,71 @@
       const modal = document.getElementById('exercise-detail-modal');
       const title = document.getElementById('ex-modal-title');
       const body = document.getElementById('ex-modal-body');
-
       title.textContent = ex.name;
 
       const inst = ex.instructions || {};
-      const musclesList = (ex.targetMuscles || []).map((m) => `<span class="category-tag">${this.escapeHtml(m)}</span>`).join(' ');
       const unit = window.BentoStorage.getSettings().unit || 'kg';
+      const muscles = (ex.targetMuscles || []).map((m, i) => `<span class="tag ${i === 0 ? 'tag-accent' : ''}">${this.escapeHtml(m)}</span>`).join('');
+      const GEAR = { barbell: 'Штанга', dumbbell: 'Гантели', kettlebell: 'Гиря', machine: 'Тренажёр', cable: 'Блок', bench: 'Скамья', band: 'Резина', handles: 'Упоры', pullbar: 'Турник', dipbars: 'Брусья', none: 'Без инвентаря' };
+      const gear = (ex.gear || []).map((g) => `<span class="tag">${GEAR[g] || this.escapeHtml(g)}</span>`).join('');
 
       const lastPerf = window.BentoStorage.getLastPerformanceForExercise(exId);
-      let pastPerfHtml = '<div style="font-size: 13px; color: var(--text-tertiary);">Пока нет выполненных подходов</div>';
+      let lastHtml = '';
       if (lastPerf && lastPerf.bestSet) {
         const perfDate = new Date(lastPerf.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-        pastPerfHtml = `
-          <div style="background: var(--pill-bg); padding: 10px 12px; border-radius: var(--radius-md); font-size: 13px;">
-            <div style="color: var(--text-tertiary); font-size: 11px; margin-bottom: 2px;">ПОСЛЕДНИЙ РЕЗУЛЬТАТ (${perfDate})</div>
-            <strong>${this.escapeHtml(window.BentoStorage.convertWeight(lastPerf.bestSet.weight, unit))} ${this.escapeHtml(unit)} × ${this.escapeHtml(lastPerf.bestSet.reps)} повт</strong>
-          </div>
-        `;
+        lastHtml = `<div class="note"><strong>${this.escapeHtml(window.BentoStorage.convertWeight(lastPerf.bestSet.weight, unit))} ${this.escapeHtml(unit)} × ${this.escapeHtml(lastPerf.bestSet.reps)}</strong>Лучший подход, ${perfDate}</div>`;
       }
 
+      let evidenceHtml = '';
+      if (ex.evidence) {
+        const LEVEL = { rct: 'Сравнительное исследование', emg: 'Измерение активности мышц (ЭМГ)', review: 'Обзор исследований' };
+        const library = window.BENTO_LIBRARY.sources;
+        const links = (ex.evidence.sources || []).map((k) => library[k] ? `<a href="${this.escapeHtml(library[k].url)}" target="_blank" rel="noopener">${this.escapeHtml(library[k].cite)}</a>` : '').join('');
+        evidenceHtml = `<div class="evidence"><strong>${LEVEL[ex.evidence.level] || 'Исследование'}</strong>${this.escapeHtml(ex.evidence.text)}<br>${links}</div>`;
+      }
+
+      const hasFigure = window.BentoFigures.has(ex.id);
       body.innerHTML = `
-        <div class="exercise-modal-svg-box">
-          ${this.sanitizeSvgMarkup(ex.svgIcon)}
-        </div>
-
-        <div style="margin-bottom: 14px;">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 6px;">Целевые мышцы</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px;">${musclesList}</div>
-        </div>
-
-        <div style="margin-bottom: 14px;">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 4px;">История в дневнике</div>
-          ${pastPerfHtml}
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
-            <strong style="color: var(--accent); font-size: 13px; display: block; margin-bottom: 4px;">1. Исходное положение</strong>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">${this.escapeHtml(inst.initial || 'Примите устойчивое исходное положение.')}</p>
-          </div>
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
-            <strong style="color: var(--accent); font-size: 13px; display: block; margin-bottom: 4px;">2. Опускание (Негативная фаза)</strong>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">${this.escapeHtml(inst.eccentric || 'Контролируйте снаряд при движении вниз.')}</p>
-          </div>
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
-            <strong style="color: var(--accent); font-size: 13px; display: block; margin-bottom: 4px;">3. Подъём (Позитивная фаза)</strong>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">${this.escapeHtml(inst.concentric || 'Выполняйте подъём за счёт целевых мышц.')}</p>
-          </div>
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
-            <strong style="color: #06b6d4; font-size: 13px; display: block; margin-bottom: 4px;">💨 Дыхание</strong>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">${this.escapeHtml(inst.breathing || 'Вдох на расслаблении, выдох на усилии.')}</p>
-          </div>
-          <div style="background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.25); border-radius: var(--radius-md); padding: 12px;">
-            <strong style="color: #f43f5e; font-size: 13px; display: block; margin-bottom: 4px;">⚠️ Типичные ошибки</strong>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">${this.escapeHtml(inst.mistakes || 'Не допускайте рывков и потери контроля.')}</p>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button class="btn btn-primary btn-block" id="btn-start-from-ex" data-ex-id="${this.escapeHtml(ex.id)}">
-            ⚡ Начать тренировку с этого упражнения
-          </button>
-          <button class="btn btn-secondary btn-block btn-sm" id="btn-view-ex-history" data-ex-id="${this.escapeHtml(ex.id)}">
-            Просмотреть полную историю упражнения
-          </button>
+        <div class="tech-stage" id="ex-live-figure">${this.exerciseArt(ex)}</div>
+        ${hasFigure ? `<div class="tech-stills">
+          <div class="tech-still">${this.exerciseArt(ex, 'start')}Начало</div>
+          <div class="tech-still">${this.exerciseArt(ex, 'finish')}Конец</div>
+        </div>` : '<div style="height: 12px;"></div>'}
+        <div class="tag-list">${muscles}${gear}</div>
+        ${evidenceHtml}
+        ${lastHtml}
+        <h3 class="detail-h">Как выполнять</h3>
+        <ol class="steps">
+          <li><strong>Исходное положение</strong>${this.escapeHtml(inst.initial || 'Примите устойчивое исходное положение.')}</li>
+          <li><strong>Главное усилие</strong>${this.escapeHtml(inst.concentric || 'Выполняйте движение за счёт целевых мышц.')}</li>
+          <li><strong>Возврат</strong>${this.escapeHtml(inst.eccentric || 'Контролируйте вес на обратном пути.')}</li>
+        </ol>
+        <div class="note"><strong>Дыхание</strong>${this.escapeHtml(inst.breathing || 'Вдох на расслаблении, выдох на усилии.')}</div>
+        <div class="note note-warn"><strong>Частые ошибки</strong>${this.escapeHtml(inst.mistakes || 'Рывки и потеря контроля над весом.')}</div>
+        <div class="stack" style="margin-top: 14px;">
+          <button class="btn btn-primary btn-block" id="btn-start-from-ex">Начать тренировку с этого упражнения</button>
+          <button class="btn btn-secondary btn-block btn-sm" id="btn-view-ex-history">История подходов</button>
         </div>
       `;
+      body.scrollTop = 0;
 
       modal.classList.remove('hidden');
+      if (hasFigure) window.BentoFigures.mount(document.getElementById('ex-live-figure'), ex.id, `Техника: ${ex.name}`);
 
-      const btnStartFromEx = document.getElementById('btn-start-from-ex');
-      if (btnStartFromEx) {
-        btnStartFromEx.addEventListener('click', () => {
-          modal.classList.add('hidden');
+      document.getElementById('btn-start-from-ex').addEventListener('click', () => {
+        modal.classList.add('hidden');
+        document.getElementById('day-preview-modal').classList.add('hidden');
+        if (AppState.activeWorkout) {
+          this.addExerciseToActiveWorkout(exId);
+          this.openActiveWorkoutScreen();
+        } else {
           this.startWorkoutFromExercise(exId);
-        });
-      }
-
-      const btnViewHist = document.getElementById('btn-view-ex-history');
-      if (btnViewHist) {
-        btnViewHist.addEventListener('click', () => {
-          modal.classList.add('hidden');
-          this.openExerciseHistoryModal(exId);
-        });
-      }
+        }
+      });
+      document.getElementById('btn-view-ex-history').addEventListener('click', () => {
+        modal.classList.add('hidden');
+        this.openExerciseHistoryModal(exId);
+      });
     },
 
     openExerciseHistoryModal: function (exId) {
@@ -882,7 +884,7 @@
           const dStr = new Date(item.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
           const setsRows = item.sets.map((s, idx) => `
             <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px dashed var(--border-subtle);">
-              <span>Сет ${idx + 1}</span>
+              <span>Подход ${idx + 1}</span>
               <strong>${this.escapeHtml(window.BentoStorage.convertWeight(s.weight, unit))} ${this.escapeHtml(unit)} × ${this.escapeHtml(s.reps)} повт</strong>
             </div>
           `).join('');
@@ -923,7 +925,7 @@
       }
 
       const muscles = musclesStr ? musclesStr.split(',').map((s) => s.trim()) : [];
-      const catNames = { chest: 'Грудь', back: 'Спина', legs: 'Ноги', shoulders: 'Плечи', arms: 'Руки', core: 'Кор' };
+      const catNames = { chest: 'Грудь', back: 'Спина', legs: 'Ноги', shoulders: 'Плечи', arms: 'Руки', core: 'Кор', cardio: 'Кардио' };
 
       const newEx = {
         id: 'custom_' + Date.now(),
@@ -933,7 +935,8 @@
         categoryName: catNames[cat] || cat,
         targetMuscles: muscles.length > 0 ? muscles : [catNames[cat]],
         isCustom: true,
-        svgIcon: `<svg viewBox="0 0 100 100" class="ex-svg"><circle cx="50" cy="50" r="30" fill="var(--accent-subtle)" stroke="var(--accent)" stroke-width="4"/><circle cx="50" cy="50" r="10" fill="var(--accent)"/></svg>`,
+        gear: ['none'],
+        goals: [],
         instructions: {
           initial: tech || 'Исходное положение согласно технике упражнения.',
           eccentric: 'Подконтрольная негативная фаза.',
@@ -991,6 +994,9 @@
           category: exObj ? exObj.category : 'chest',
           progressionWeight: item.progressionWeight || '',
           progressionReps: item.progressionReps || '',
+          repRange: item.repRange || '',
+          restSeconds: item.restSeconds === undefined ? null : item.restSeconds,
+          group: item.group || null,
           sets: sets,
         };
       });
@@ -1009,21 +1015,21 @@
         {
           id: 's_' + Date.now() + '_1',
           setNumber: 1,
-          weight: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 50,
+          weight: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 0,
           reps: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.reps : 10,
           completed: false,
         },
         {
           id: 's_' + Date.now() + '_2',
           setNumber: 2,
-          weight: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 50,
+          weight: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 0,
           reps: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.reps : 10,
           completed: false,
         },
         {
           id: 's_' + Date.now() + '_3',
           setNumber: 3,
-          weight: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 50,
+          weight: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 0,
           reps: lastPerf && lastPerf.lastSet ? lastPerf.lastSet.reps : 10,
           completed: false,
         },
@@ -1033,7 +1039,7 @@
         exerciseId: exerciseId,
         name: exObj ? exObj.name : 'Упражнение',
         category: exObj ? exObj.category : 'chest',
-        progressionWeight: '+2.5 кг',
+        progressionWeight: '',
         progressionReps: 'до 12 повт',
         sets: sets,
       };
@@ -1064,7 +1070,7 @@
       this.resumeActiveWorkoutTimer();
       this.openActiveWorkoutScreen();
       this.renderHomeBento();
-      this.showToast('Тренировка начата! 🏋️');
+      this.showToast('Тренировка начата');
       return true;
     },
 
@@ -1144,22 +1150,20 @@
 
       if (AppState.activeWorkout.exercises.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; padding: 60px 20px; color: var(--text-tertiary);">
-            <div style="font-size: 40px; margin-bottom: 12px;">🏋️</div>
-            <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">В тренировке пока нет упражнений</div>
-            <p style="font-size: 13px; margin-bottom: 18px;">Нажмите кнопку ниже, чтобы выбрать упражнения из библиотеки.</p>
-            <button class="btn btn-primary" id="btn-empty-add-exercise">+ Добавить первое упражнение</button>
+          <div class="empty">
+            <p style="margin-bottom: 14px;">Добавьте первое упражнение, чтобы начать.</p>
+            <button class="btn btn-primary" id="btn-empty-add-exercise">Выбрать упражнение</button>
           </div>
         `;
-        const btnEmptyAdd = document.getElementById('btn-empty-add-exercise');
-        if (btnEmptyAdd) {
-          btnEmptyAdd.addEventListener('click', () => this.openExercisePickerModal());
-        }
+        document.getElementById('btn-empty-add-exercise').addEventListener('click', () => this.openExercisePickerModal());
         return;
       }
 
-      container.innerHTML = AppState.activeWorkout.exercises.map((exItem, exIdx) => {
+      const exercisesList = AppState.activeWorkout.exercises;
+      container.innerHTML = exercisesList.map((exItem, exIdx) => {
         const lastPerf = window.BentoStorage.getLastPerformanceForExercise(exItem.exerciseId);
+        const exObj = window.BentoStorage.getExerciseById(exItem.exerciseId);
+        const timed = !!(exObj && exObj.timed);
 
         const setRows = exItem.sets.map((s, sIdx) => {
           let prevSetHint = '—';
@@ -1169,83 +1173,54 @@
           } else if (lastPerf && lastPerf.lastSet) {
             prevSetHint = `${window.BentoStorage.convertWeight(lastPerf.lastSet.weight, unit)}×${lastPerf.lastSet.reps}`;
           }
-
-          let targetHint = '—';
-          if (exItem.progressionWeight || exItem.progressionReps) {
-            targetHint = `${exItem.progressionWeight || ''} ${exItem.progressionReps || ''}`.trim();
-          }
+          const weightVal = s.weight ? window.BentoStorage.convertWeight(s.weight, unit) : '';
 
           return `
             <tr class="set-row ${s.completed ? 'is-done' : ''}" data-ex-idx="${exIdx}" data-set-idx="${sIdx}">
-              <td>
-                <span class="set-num-badge">${this.escapeHtml(s.setNumber)}</span>
-              </td>
-              <td>
-                <div class="set-prev-hint">${this.escapeHtml(prevSetHint)}</div>
-              </td>
-              <td>
-                <div class="set-target-hint">${this.escapeHtml(targetHint)}</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" class="set-input-box set-weight-input" value="${this.escapeHtml(window.BentoStorage.convertWeight(s.weight, unit))}" data-ex-idx="${exIdx}" data-set-idx="${sIdx}">
-              </td>
-              <td>
-                <input type="number" step="1" class="set-input-box set-reps-input" value="${this.escapeHtml(s.reps)}" data-ex-idx="${exIdx}" data-set-idx="${sIdx}">
-              </td>
-              <td>
-                <button class="set-check-btn ${s.completed ? 'checked' : ''}" data-ex-idx="${exIdx}" data-set-idx="${sIdx}" title="Отметить подход">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </button>
-              </td>
+              <td><span class="set-num-badge">${this.escapeHtml(s.setNumber)}</span></td>
+              <td><div class="set-prev-hint">${this.escapeHtml(prevSetHint)}</div></td>
+              <td><input type="number" step="0.5" inputmode="decimal" placeholder="0" aria-label="Вес, подход ${this.escapeHtml(s.setNumber)}" class="set-input-box set-weight-input" value="${this.escapeHtml(weightVal)}" data-ex-idx="${exIdx}" data-set-idx="${sIdx}"></td>
+              <td><input type="number" step="1" inputmode="numeric" aria-label="${timed ? 'Секунды' : 'Повторы'}, подход ${this.escapeHtml(s.setNumber)}" class="set-input-box set-reps-input" value="${this.escapeHtml(s.reps)}" data-ex-idx="${exIdx}" data-set-idx="${sIdx}"></td>
+              <td><button class="set-check-btn ${s.completed ? 'checked' : ''}" data-ex-idx="${exIdx}" data-set-idx="${sIdx}" aria-label="Отметить подход ${this.escapeHtml(s.setNumber)}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              </button></td>
             </tr>
           `;
         }).join('');
 
+        const prevGroup = exIdx > 0 ? exercisesList[exIdx - 1].group : null;
+        const nextGroup = exIdx < exercisesList.length - 1 ? exercisesList[exIdx + 1].group : null;
+        const inGroup = exItem.group && (exItem.group === nextGroup || exItem.group === prevGroup);
+        const targetParts = [];
+        if (exItem.repRange) targetParts.push(`Цель ${exItem.repRange}`);
+        else if (exItem.progressionReps) targetParts.push(`Цель ${exItem.progressionReps}`);
+        if (inGroup && exItem.group === nextGroup) targetParts.push('сразу следующее');
+        else if (exItem.restSeconds) targetParts.push(`отдых ${exItem.restSeconds} с`);
+
         return `
           <div class="workout-exercise-card" data-ex-idx="${exIdx}">
             <div class="workout-exercise-header">
+              <button class="workout-fig-btn btn-ex-tech" data-ex-id="${this.escapeHtml(exItem.exerciseId)}" aria-label="Техника: ${this.escapeHtml(exItem.name)}">${this.exerciseArt(exObj)}</button>
               <div>
-                <span class="category-tag" style="margin-bottom: 4px;">${this.escapeHtml(exItem.category || 'Грудь')}</span>
                 <div class="workout-exercise-title">${this.escapeHtml(exItem.name)}</div>
+                <div class="workout-exercise-target">${this.escapeHtml(targetParts.join(', '))}</div>
               </div>
               <div class="workout-exercise-actions">
-                <button class="icon-btn btn-sm btn-ex-tech" data-ex-id="${this.escapeHtml(exItem.exerciseId)}" title="Техника упражнения">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <button class="icon-btn btn-sm btn-ex-hist" data-ex-id="${this.escapeHtml(exItem.exerciseId)}" aria-label="История подходов">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                 </button>
-                <button class="icon-btn btn-sm btn-ex-hist" data-ex-id="${this.escapeHtml(exItem.exerciseId)}" title="История подходов">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </button>
-                <button class="icon-btn btn-sm btn-ex-remove" data-ex-idx="${exIdx}" title="Удалить из тренировки" style="color: #f43f5e;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <button class="icon-btn btn-sm btn-ex-remove" data-ex-idx="${exIdx}" aria-label="Убрать упражнение">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
                 </button>
               </div>
             </div>
-
             <table class="set-table">
-              <thead>
-                <tr>
-                  <th>Сет</th>
-                  <th>Прошлый</th>
-                  <th>Цель</th>
-                  <th>${this.escapeHtml(unit)}</th>
-                  <th>Повт</th>
-                  <th>✓</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${setRows}
-              </tbody>
+              <thead><tr><th scope="col">№</th><th scope="col">Прошлый</th><th scope="col">${this.escapeHtml(unit)}</th><th scope="col">${timed ? 'Сек' : 'Повт'}</th><th scope="col"><span class="visually-hidden">Готово</span></th></tr></thead>
+              <tbody>${setRows}</tbody>
             </table>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-              <button class="btn btn-secondary btn-sm btn-add-set" data-ex-idx="${exIdx}">
-                + Добавить подход
-              </button>
-              ${exItem.sets.length > 1 ? `
-                <button class="btn btn-sm" style="color: var(--text-tertiary); background:none; border:none;" data-ex-idx="${exIdx}" id="btn-remove-last-set-${exIdx}">
-                  - Убрать последний
-                </button>
-              ` : ''}
+            <div class="set-actions">
+              <button class="text-btn btn-add-set" data-ex-idx="${exIdx}">Добавить подход</button>
+              ${exItem.sets.length > 1 ? `<button class="text-btn" data-ex-idx="${exIdx}" id="btn-remove-last-set-${exIdx}">Убрать последний</button>` : ''}
             </div>
           </div>
         `;
@@ -1274,13 +1249,13 @@
       });
 
       container.querySelectorAll('.set-check-btn').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', () => {
           const exIdx = parseInt(btn.getAttribute('data-ex-idx'));
           const sIdx = parseInt(btn.getAttribute('data-set-idx'));
-          const currentStatus = AppState.activeWorkout.exercises[exIdx].sets[sIdx].completed;
-          const newStatus = !currentStatus;
+          const exItem = AppState.activeWorkout.exercises[exIdx];
+          const newStatus = !exItem.sets[sIdx].completed;
 
-          AppState.activeWorkout.exercises[exIdx].sets[sIdx].completed = newStatus;
+          exItem.sets[sIdx].completed = newStatus;
           this.persistActiveWorkout();
 
           btn.classList.toggle('checked', newStatus);
@@ -1293,8 +1268,13 @@
             window.BentoFeedback.playSetCompleteClick();
             window.BentoFeedback.hapticSetCheck();
 
-            const settings = window.BentoStorage.getSettings();
-            window.BentoTimer.start(settings.defaultRestSeconds || 90);
+            // Inside a superset or circuit the rest comes only after the last exercise of the group.
+            const next = AppState.activeWorkout.exercises[exIdx + 1];
+            const leadsIntoGroup = exItem.group && next && next.group === exItem.group;
+            const planned = exItem.restSeconds === null || exItem.restSeconds === undefined
+              ? window.BentoStorage.getSettings().defaultRestSeconds || 90
+              : exItem.restSeconds;
+            if (!leadsIntoGroup && planned > 0) window.BentoTimer.start(planned);
           }
         });
       });
@@ -1308,7 +1288,7 @@
           setsArr.push({
             id: 's_' + Date.now() + '_' + (setsArr.length + 1),
             setNumber: setsArr.length + 1,
-            weight: prevSet ? prevSet.weight : 50,
+            weight: prevSet ? prevSet.weight : 0,
             reps: prevSet ? prevSet.reps : 10,
             completed: false,
           });
@@ -1334,23 +1314,17 @@
       });
 
       container.querySelectorAll('.btn-ex-tech').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const exId = btn.getAttribute('data-ex-id');
-          this.openExerciseDetailModal(exId);
-        });
+        btn.addEventListener('click', () => this.openExerciseDetailModal(btn.getAttribute('data-ex-id')));
       });
 
       container.querySelectorAll('.btn-ex-hist').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const exId = btn.getAttribute('data-ex-id');
-          this.openExerciseHistoryModal(exId);
-        });
+        btn.addEventListener('click', () => this.openExerciseHistoryModal(btn.getAttribute('data-ex-id')));
       });
 
       container.querySelectorAll('.btn-ex-remove').forEach((btn) => {
         btn.addEventListener('click', () => {
           const exIdx = parseInt(btn.getAttribute('data-ex-idx'));
-          if (confirm('Удалить это упражнение из тренировки?')) {
+          if (confirm('Убрать это упражнение из тренировки?')) {
             AppState.activeWorkout.exercises.splice(exIdx, 1);
             this.persistActiveWorkout();
             this.renderActiveWorkoutSets();
@@ -1456,25 +1430,23 @@
       const q = (queryStr || '').toLowerCase().trim();
 
       const filtered = exercises.filter((e) => {
-        return !q || e.name.toLowerCase().includes(q) || (e.categoryName && e.categoryName.toLowerCase().includes(q));
+        return !q || e.name.toLowerCase().includes(q)
+          || (e.categoryName && e.categoryName.toLowerCase().includes(q))
+          || (e.targetMuscles || []).some((m) => m.toLowerCase().includes(q));
       });
 
-      container.innerHTML = filtered.map((ex) => {
-        return `
-          <div class="catalog-item-card picker-item" data-ex-id="${this.escapeHtml(ex.id)}">
-            <div class="catalog-item-svg">
-              ${this.sanitizeSvgMarkup(ex.svgIcon)}
-            </div>
-            <div class="catalog-item-info">
-              <div class="catalog-item-name">${this.escapeHtml(ex.name)}</div>
-              <div class="catalog-item-meta">
-                <span class="category-tag">${this.escapeHtml(ex.categoryName || ex.category)}</span>
-              </div>
-            </div>
-            <button class="btn btn-secondary btn-sm" style="flex-shrink:0;">+ Добавить</button>
-          </div>
-        `;
-      }).join('');
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty">Ничего не нашлось. Измените запрос.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map((ex) => `
+        <button class="ex-row picker-item" data-ex-id="${this.escapeHtml(ex.id)}">
+          ${this.exerciseArt(ex)}
+          <span class="ex-row-name">${this.escapeHtml(ex.name)}<br><span class="small muted">${this.escapeHtml((ex.targetMuscles || [])[0] || ex.categoryName || '')}</span></span>
+          <span class="ex-row-sets" aria-hidden="true">+</span>
+        </button>
+      `).join('');
 
       container.querySelectorAll('.picker-item').forEach((card) => {
         card.addEventListener('click', () => {
@@ -1484,9 +1456,9 @@
             window._tplEditingExercises.push({
               exerciseId: exId,
               targetSets: 3,
-              targetWeight: 40,
+              targetWeight: 0,
               targetReps: 10,
-              progressionWeight: '+2.5 кг',
+              progressionWeight: '',
               progressionReps: 'до 12 повт',
             });
             this.renderTemplateEditorExercises(window._tplEditingExercises);
@@ -1503,15 +1475,15 @@
       const exObj = window.BentoStorage.getExerciseById(exId);
       const lastPerf = window.BentoStorage.getLastPerformanceForExercise(exId);
 
-      const defaultWeight = lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 40;
+      const defaultWeight = lastPerf && lastPerf.lastSet ? lastPerf.lastSet.weight : 0;
       const defaultReps = lastPerf && lastPerf.lastSet ? lastPerf.lastSet.reps : 10;
 
       const newExItem = {
         exerciseId: exId,
         name: exObj ? exObj.name : 'Упражнение',
         category: exObj ? exObj.category : 'chest',
-        progressionWeight: '+2.5 кг',
-        progressionReps: 'до 10 повт',
+        progressionWeight: '',
+        progressionReps: 'до 12 повт',
         sets: [
           { id: 's_' + Date.now() + '_1', setNumber: 1, weight: defaultWeight, reps: defaultReps, completed: false },
           { id: 's_' + Date.now() + '_2', setNumber: 2, weight: defaultWeight, reps: defaultReps, completed: false },
@@ -1573,7 +1545,7 @@
       this.renderHomeBento();
       this.renderAnalytics();
 
-      this.showToast('🎉 Тренировка успешно сохранена в дневник!');
+      this.showToast('Тренировка сохранена в дневник');
     },
 
     persistActiveWorkout: function () {
@@ -1674,7 +1646,7 @@
       if (modalPauseToggle) {
         modalPauseToggle.addEventListener('click', () => {
           window.BentoTimer.togglePause();
-          modalPauseToggle.textContent = window.BentoTimer.isRunning() ? 'Пауза' : 'Старт';
+          modalPauseToggle.textContent = window.BentoTimer.isRunning() ? 'Пауза' : 'Продолжить';
         });
       }
 
@@ -1728,15 +1700,13 @@
 
         statsBento.innerHTML = `
           <div class="bento-card bento-col-1">
-            <span class="bento-card-tag">Тренировки</span>
+            <span class="bento-card-tag">Всего тренировок</span>
             <div class="bento-stat-num">${stats.totalWorkouts}</div>
-            <div class="bento-card-subtitle">Всего проведено</div>
-          </div>
+                      </div>
           <div class="bento-card bento-col-1">
-            <span class="bento-card-tag">Подходы</span>
+            <span class="bento-card-tag">Всего подходов</span>
             <div class="bento-stat-num">${stats.totalCompletedSets}</div>
-            <div class="bento-card-subtitle">Выполнено сетов</div>
-          </div>
+                      </div>
         `;
       }
 
@@ -1746,7 +1716,7 @@
         const history = window.BentoStorage.getHistory();
 
         if (history.length === 0) {
-          historyList.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-tertiary);">Дневник пока пуст. Проведите первую тренировку!</div>`;
+          historyList.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-tertiary);">Здесь появятся завершённые тренировки.</div>`;
           return;
         }
 
@@ -1788,7 +1758,7 @@
       if (sessions.length === 0) {
         box.innerHTML = `
           <div style="background: var(--pill-bg); border-radius: var(--radius-md); padding: 12px; font-size: 13px; color: var(--text-secondary); text-align: center;">
-            На выбранную дату (<strong>${dateStr}</strong>) тренировок не найдено.
+            В этот день тренировок нет.
           </div>
         `;
         return;
@@ -1850,7 +1820,7 @@
         exBreakdown = workout.exercises.map((ex) => {
           const setList = (ex.sets || []).map((s) => `
             <div style="display:flex; justify-content: space-between; font-size: 13px; padding: 3px 0;">
-              <span>Сет ${this.escapeHtml(s.setNumber)}:</span>
+              <span>Подход ${this.escapeHtml(s.setNumber)}</span>
               <strong>${this.escapeHtml(window.BentoStorage.convertWeight(s.weight, unit))} ${this.escapeHtml(unit)} × ${this.escapeHtml(s.reps)} повт ${s.completed ? '✓' : ''}</strong>
             </div>
           `).join('');
@@ -1859,7 +1829,7 @@
             <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; margin-bottom: 10px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <strong style="color: var(--text-primary); font-size: 15px;">${this.escapeHtml(ex.name)}</strong>
-                <span class="category-tag">${this.escapeHtml(ex.category || 'Грудь')}</span>
+                <span class="category-tag">${this.escapeHtml(this.categoryLabel(ex.category))}</span>
               </div>
               <div style="display: flex; flex-direction: column;">
                 ${setList}
@@ -1876,21 +1846,21 @@
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: var(--pill-bg); border-radius: var(--radius-md); padding: 12px; text-align: center; margin-bottom: 18px;">
           <div>
-            <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">ВРЕМЯ</div>
-            <div style="font-size: 16px; font-weight: 800;">${durStr}</div>
+            <div class="small muted">Время</div>
+            <div class="tile-num" style="font-size: 26px;">${durStr}</div>
           </div>
           <div>
-            <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">СЕТЫ</div>
-            <div style="font-size: 16px; font-weight: 800;">${this.escapeHtml(workout.completedSets || 0)}/${this.escapeHtml(workout.totalSets || 0)}</div>
+            <div class="small muted">Подходы</div>
+            <div class="tile-num" style="font-size: 26px;">${this.escapeHtml(workout.completedSets || 0)}/${this.escapeHtml(workout.totalSets || 0)}</div>
           </div>
           <div>
-            <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">УПРАЖНЕНИЙ</div>
-            <div style="font-size: 16px; font-weight: 800;">${exCount}</div>
+            <div class="small muted">Упражнения</div>
+            <div class="tile-num" style="font-size: 26px;">${exCount}</div>
           </div>
         </div>
 
         <div class="section-header" style="margin-top: 0;">
-          <h3 class="section-title" style="font-size: 15px;">Протокол упражнений</h3>
+          <h3 class="section-title" style="font-size: 23px;">Подходы</h3>
         </div>
         <div style="margin-bottom: 16px;">
           ${exBreakdown}
@@ -1937,7 +1907,7 @@
       const logsContainer = document.getElementById('profile-weight-history-list');
       if (logsContainer) {
         if (!metrics.logs || metrics.logs.length === 0) {
-          logsContainer.innerHTML = `<div style="font-size: 12px; color: var(--text-tertiary); padding: 8px 0;">Нет записей замера веса</div>`;
+          logsContainer.innerHTML = `<div style="font-size: 12px; color: var(--text-tertiary); padding: 8px 0;">Замеров пока нет.</div>`;
         } else {
           const rev = [...metrics.logs].reverse();
           logsContainer.innerHTML = rev.map((l) => {
@@ -1947,7 +1917,7 @@
                 <span style="color: var(--text-secondary);">${this.escapeHtml(l.date)}</span>
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <strong>${this.escapeHtml(wVal)} ${this.escapeHtml(unit)}</strong>
-                  <button class="btn-del-weight-log" data-log-id="${this.escapeHtml(l.id)}" style="color: #f43f5e; background:none; border:none; cursor:pointer;" title="Удалить">✕</button>
+                  <button class="btn-del-weight-log" data-log-id="${this.escapeHtml(l.id)}" style="color: var(--danger); min-width: 32px; min-height: 32px;" title="Удалить">✕</button>
                 </div>
               </div>
             `;
@@ -1990,12 +1960,6 @@
         b.classList.toggle('active', active);
         b.setAttribute('aria-pressed', String(active));
       });
-      document.querySelectorAll('#settings-style-control .segment-item').forEach((b) => {
-        const active = b.getAttribute('data-style') === (settings.uiStyle || 'bento');
-        b.classList.toggle('active', active);
-        b.setAttribute('aria-pressed', String(active));
-      });
-
       document.querySelectorAll('.accent-color-circle').forEach((b) => {
         b.classList.toggle('active', b.getAttribute('data-accent') === settings.accent);
       });
@@ -2065,18 +2029,6 @@
         });
       }
 
-      document.querySelectorAll('#settings-style-control .segment-item').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const style = btn.getAttribute('data-style');
-          if (!window.BentoStorage.saveSettings({ uiStyle: style })) {
-            this.showToast('Не удалось сохранить стиль интерфейса', 'error');
-            return;
-          }
-          this.applySavedThemeAndAccent();
-          this.renderProfile();
-        });
-      });
-
       document.querySelectorAll('#settings-theme-control .segment-item').forEach((btn) => {
         btn.addEventListener('click', () => {
           const th = btn.getAttribute('data-theme');
@@ -2101,7 +2053,7 @@
       if (soundToggle) {
         soundToggle.addEventListener('change', (e) => {
           window.BentoStorage.saveSettings({ soundEnabled: e.target.checked });
-          this.showToast(e.target.checked ? 'Звук включен 🔔' : 'Звук отключен 🔕');
+          this.showToast(e.target.checked ? 'Звук включён' : 'Звук выключен');
         });
       }
 
@@ -2109,7 +2061,7 @@
       if (vibToggle) {
         vibToggle.addEventListener('change', (e) => {
           window.BentoStorage.saveSettings({ vibrationEnabled: e.target.checked });
-          this.showToast(e.target.checked ? 'Вибрация включена 📳' : 'Вибрация отключена 📴');
+          this.showToast(e.target.checked ? 'Вибрация включена' : 'Вибрация выключена');
         });
       }
 
@@ -2118,7 +2070,7 @@
         btnExportAll.addEventListener('click', () => {
           const json = window.BentoStorage.exportAllData();
           this.downloadJsonFile(json, `bentofit_backup_${this.getDateStamp()}.json`);
-          this.showToast('Полный архив резервной копии скачан!');
+          this.showToast('Копия сохранена');
         });
       }
 
@@ -2139,7 +2091,7 @@
               this.renderExercises();
               this.renderAnalytics();
               this.renderProfile();
-              this.showToast('Данные успешно восстановлены!');
+              this.showToast('Данные восстановлены');
             } else {
               alert('Ошибка восстановления: ' + res.error);
             }
@@ -2189,7 +2141,7 @@
       const dVal = dInput.value || this.getDateStamp();
 
       if (!val || val <= 0) {
-        alert('Пожалуйста, введите корректный вес.');
+        alert('Введите вес больше нуля.');
         return;
       }
 
@@ -2205,7 +2157,7 @@
       document.getElementById('weight-log-modal').classList.add('hidden');
       this.renderProfile();
       this.renderHomeBento();
-      this.showToast('Замер успешно сохранен');
+      this.showToast('Замер сохранён');
     },
 
     // ----------------------------------------------------
@@ -2221,13 +2173,13 @@
 
       if (templateId) {
         const tpl = window.BentoStorage.getTemplateById(templateId);
-        title.textContent = 'Редактирование программы';
+        title.textContent = 'Изменить тренировку';
         nameInput.value = tpl ? tpl.name : '';
         descInput.value = tpl ? tpl.description || '' : '';
-        btnDelete.style.display = 'block';
+        btnDelete.style.display = tpl && tpl.isLibrary ? 'none' : 'block';
         this.renderTemplateEditorExercises(tpl ? tpl.exercises : []);
       } else {
-        title.textContent = 'Создание новой программы';
+        title.textContent = 'Новая тренировка';
         nameInput.value = '';
         descInput.value = '';
         btnDelete.style.display = 'none';
@@ -2256,7 +2208,7 @@
       if (window._tplEditingExercises.length === 0) {
         container.innerHTML = `
           <div style="text-align: center; padding: 20px; font-size: 13px; color: var(--text-tertiary); background: var(--pill-bg); border-radius: var(--radius-md);">
-            В программе пока нет упражнений. Нажмите кнопку "+ Добавить".
+            Упражнений пока нет. Нажмите «Добавить».
           </div>
         `;
         return;
@@ -2271,30 +2223,30 @@
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <strong style="font-size: 14px; color: var(--text-primary);">${this.escapeHtml(exObj ? exObj.name : 'Упражнение')}</strong>
-              <button class="icon-btn btn-sm btn-tpl-del-ex" data-idx="${idx}" style="color: #f43f5e; width: 28px; height: 28px;">✕</button>
+              <button class="icon-btn btn-sm btn-tpl-del-ex" data-idx="${idx}" style="color: var(--danger);">✕</button>
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px;">
               <div>
-                <label style="font-size: 10px; color: var(--text-tertiary); font-weight:700;">СЕТЫ (1-20)</label>
-                <input type="number" min="1" max="20" class="search-input tpl-inp-sets" data-idx="${idx}" value="${this.escapeHtml(e.targetSets || 3)}" style="padding: 6px; font-size: 13px; text-align:center;">
+                <label style="font-size: 12px; color: var(--text-tertiary);">Подходы</label>
+                <input type="number" min="1" max="20" class="search-input tpl-inp-sets" data-idx="${idx}" value="${this.escapeHtml(e.targetSets || 3)}" style="min-height: 40px; padding: 6px; text-align: center;">
               </div>
               <div>
-                <label style="font-size: 10px; color: var(--text-tertiary); font-weight:700;">ВЕС (${this.escapeHtml(unit)})</label>
-                <input type="number" step="0.5" class="search-input tpl-inp-weight" data-idx="${idx}" value="${this.escapeHtml(window.BentoStorage.convertWeight(e.targetWeight ?? 50, unit))}" style="padding: 6px; font-size: 13px; text-align:center;">
+                <label style="font-size: 12px; color: var(--text-tertiary);">Вес, ${this.escapeHtml(unit)}</label>
+                <input type="number" step="0.5" class="search-input tpl-inp-weight" data-idx="${idx}" value="${this.escapeHtml(window.BentoStorage.convertWeight(e.targetWeight ?? 50, unit))}" style="min-height: 40px; padding: 6px; text-align: center;">
               </div>
               <div>
-                <label style="font-size: 10px; color: var(--text-tertiary); font-weight:700;">ПОВТОРЫ</label>
-                <input type="number" class="search-input tpl-inp-reps" data-idx="${idx}" value="${this.escapeHtml(e.targetReps || 10)}" style="padding: 6px; font-size: 13px; text-align:center;">
+                <label style="font-size: 12px; color: var(--text-tertiary);">Повторы</label>
+                <input type="number" class="search-input tpl-inp-reps" data-idx="${idx}" value="${this.escapeHtml(e.targetReps || 10)}" style="min-height: 40px; padding: 6px; text-align: center;">
               </div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
               <div>
-                <label style="font-size: 10px; color: var(--text-tertiary); font-weight:700;">ПРОГРЕССИЯ ВЕСА</label>
-                <input type="text" class="search-input tpl-inp-prog-w" data-idx="${idx}" value="${this.escapeHtml(e.progressionWeight || '+2.5 кг')}" style="padding: 6px; font-size: 12px;">
+                <label style="font-size: 12px; color: var(--text-tertiary);">Когда повышать вес</label>
+                <input type="text" class="search-input tpl-inp-prog-w" data-idx="${idx}" value="${this.escapeHtml(e.progressionWeight || '')}" style="min-height: 40px; padding: 6px 8px; font-size: 14px;">
               </div>
               <div>
-                <label style="font-size: 10px; color: var(--text-tertiary); font-weight:700;">ПРОГРЕССИЯ ПОВТОРОВ</label>
-                <input type="text" class="search-input tpl-inp-prog-r" data-idx="${idx}" value="${this.escapeHtml(e.progressionReps || 'до 12 повт')}" style="padding: 6px; font-size: 12px;">
+                <label style="font-size: 12px; color: var(--text-tertiary);">Цель по повторам</label>
+                <input type="text" class="search-input tpl-inp-prog-r" data-idx="${idx}" value="${this.escapeHtml(e.progressionReps || 'до 12 повт')}" style="min-height: 40px; padding: 6px 8px; font-size: 14px;">
               </div>
             </div>
           </div>
@@ -2351,11 +2303,11 @@
       const desc = document.getElementById('tpl-edit-desc').value.trim();
 
       if (!name) {
-        alert('Пожалуйста, введите название шаблона программы.');
+        alert('Введите название тренировки.');
         return;
       }
       if (!window._tplEditingExercises || window._tplEditingExercises.length === 0) {
-        alert('Добавьте хотя бы одно упражнение в программу.');
+        alert('Добавьте хотя бы одно упражнение.');
         return;
       }
 
@@ -2364,6 +2316,7 @@
         id: id,
         name: name,
         description: desc,
+        short: AppState.editingTemplateId && (window.BentoStorage.getTemplateById(AppState.editingTemplateId) || {}).short,
         exercises: window._tplEditingExercises,
       };
 
@@ -2374,12 +2327,12 @@
       this.closeTemplateEditorModal();
       this.renderTemplates();
       this.renderHomeBento();
-      this.showToast(`Программа "${name}" сохранена!`);
+      this.showToast(`Сохранено: ${name}`);
     },
 
     deleteTemplateFromEditor: function () {
       if (!AppState.editingTemplateId) return;
-      if (confirm('Вы уверены, что хотите удалить эту программу?')) {
+      if (confirm('Удалить эту тренировку?')) {
         if (!window.BentoStorage.deleteTemplate(AppState.editingTemplateId)) {
           alert('Не удалось удалить программу. Проверьте доступность хранилища устройства.');
           return;
@@ -2387,7 +2340,7 @@
         this.closeTemplateEditorModal();
         this.renderTemplates();
         this.renderHomeBento();
-        this.showToast('Программа удалена');
+        this.showToast('Тренировка удалена');
       }
     },
 
@@ -2401,7 +2354,7 @@
       document.getElementById('sched-start-date-input').value = sched.startDate || '2026-10-01';
       document.getElementById('sched-interval-input').value = sched.intervalDays || 1;
 
-      window._schedEditingSequence = [...(sched.sequence || ['tpl_push', 'REST', 'tpl_pull', 'REST'])];
+      window._schedEditingSequence = [...(sched.sequence || ['REST'])];
       this.renderScheduleSequenceSlots();
 
       modal.classList.remove('hidden');
@@ -2423,18 +2376,18 @@
       const container = document.getElementById('sched-sequence-editor');
       if (!container) return;
 
-      const templates = window.BentoStorage.getTemplates();
+      const templates = window.BentoStorage.getAllTemplates();
 
       container.innerHTML = window._schedEditingSequence.map((slotVal, idx) => {
         return `
           <div style="display: flex; gap: 8px; align-items: center;">
-            <span style="font-size: 12px; font-weight:700; width: 55px; color: var(--text-tertiary);">Шаг ${idx + 1}:</span>
-            <select class="search-input sched-slot-select" data-idx="${idx}" style="padding: 8px 12px; font-size: 13px; flex: 1;">
-              <option value="REST" ${slotVal === 'REST' ? 'selected' : ''}>🧘 День отдыха (REST)</option>
-              ${templates.map((t) => `<option value="${this.escapeHtml(t.id)}" ${slotVal === t.id ? 'selected' : ''}>🏋️ ${this.escapeHtml(t.name)}</option>`).join('')}
+            <span class="small muted" style="flex: none; width: 52px;">День ${idx + 1}</span>
+            <select class="search-input sched-slot-select" data-idx="${idx}" style="flex: 1; min-width: 0;">
+              <option value="REST" ${slotVal === 'REST' ? 'selected' : ''}>Отдых</option>
+              ${templates.map((t) => `<option value="${this.escapeHtml(t.id)}" ${slotVal === t.id ? 'selected' : ''}>${this.escapeHtml(t.name)}</option>`).join('')}
             </select>
             ${window._schedEditingSequence.length > 2 ? `
-              <button class="icon-btn btn-sm btn-del-sched-slot" data-idx="${idx}" style="color: #f43f5e; width: 30px; height: 30px;">✕</button>
+              <button class="icon-btn btn-sm btn-del-sched-slot" data-idx="${idx}" style="color: var(--danger);">✕</button>
             ` : ''}
           </div>
         `;
@@ -2463,7 +2416,7 @@
       const newSched = {
         startDate: sDate,
         intervalDays: interval,
-        sequence: window._schedEditingSequence || ['tpl_push', 'REST'],
+        sequence: window._schedEditingSequence || ['REST'],
       };
 
       if (!window.BentoStorage.saveSchedule(newSched)) {
@@ -2473,7 +2426,12 @@
       this.closeScheduleConfigModal();
       this.renderTemplates();
       this.renderHomeBento();
-      this.showToast('Интервальное расписание сохранено');
+      this.showToast('План сохранён');
+    },
+
+    categoryLabel: function (category) {
+      const names = { chest: 'Грудь', back: 'Спина', legs: 'Ноги', shoulders: 'Плечи', arms: 'Руки', core: 'Кор', cardio: 'Кардио' };
+      return names[category] || category || '';
     },
 
     // ----------------------------------------------------

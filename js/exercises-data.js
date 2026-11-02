@@ -1,4 +1,6 @@
-// 34 Exercises across 6 muscle groups
+// Built-in exercise library. Technique drawings live in figures.js, keyed by the same id.
+// gear: barbell, dumbbell, kettlebell, machine, cable, bench, band, handles, pullbar, dipbars, none
+// goals: mass, strength, fat, beginner. evidence.level: rct, emg, review (see programs-data.js for sources)
 window.DEFAULT_EXERCISES = [
   {
     "id": "ex_bench_press",
@@ -11,13 +13,27 @@ window.DEFAULT_EXERCISES = [
       "Передняя дельта",
       "Трицепс"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M20,70 L80,70 M30,70 L30,85 M70,70 L70,85\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M28,66 C32,60 48,58 54,64 L66,66\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"24\" cy=\"62\" r=\"5\" fill=\"var(--accent)\"/><line x1=\"15\" y1=\"35\" x2=\"75\" y2=\"35\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"15\" cy=\"35\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"75\" cy=\"35\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M42,60 L40,42 L48,36 M50,60 L52,42 L48,36\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>",
     "instructions": {
       "initial": "Лягте на скамью, сведите лопатки и прижмите ягодицы. Стопы плотно упираются в пол. Хват чуть шире плеч, закрытый.",
       "eccentric": "На вдохе подконтрольно опустите гриф к середине грудных мышц (линия сосков), удерживая локти под углом около 45-75 градусов к корпусу.",
       "concentric": "На выдохе мощным движением выжмите штангу вверх по дугообразной траектории, не отрывая таз и лопатки от скамьи.",
       "breathing": "Вдох при опускании штанги к груди, выдох на усилии при выжимании.",
       "mistakes": "Разведение локтей на 90 градусов (травма плеч), отрыв таза от скамьи, отбив грифа от грудной клетки."
+    },
+    "gear": [
+      "barbell",
+      "bench"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ],
+    "evidence": {
+      "level": "emg",
+      "text": "Эталон в сравнении ACE: относительно него оценивали остальные упражнения на грудь.",
+      "sources": [
+        "ace_chest"
+      ]
     }
   },
   {
@@ -31,14 +47,20 @@ window.DEFAULT_EXERCISES = [
       "Передняя дельта",
       "Трицепс"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M20,80 L60,45 M35,67 L30,85 M55,50 L65,75 M60,45 L80,50\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M38,62 C45,54 52,47 62,45\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"66\" cy=\"40\" r=\"5\" fill=\"var(--accent)\"/><line x1=\"45\" y1=\"25\" x2=\"55\" y2=\"18\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"45\" cy=\"25\" r=\"4\" fill=\"var(--accent)\"/><circle cx=\"55\" cy=\"18\" r=\"4\" fill=\"var(--accent)\"/><path d=\"M48,52 L50,30 M56,48 L53,26\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>",
     "instructions": {
       "initial": "Установите угол скамьи 30-45 градусов. Поднимите гантели к плечам, сведите лопатки, упритесь ногами в пол.",
       "eccentric": "На вдохе опускайте гантели по краям груди с комфортной растяжкой, сохраняя угол в локтях около 60-70 градусов.",
       "concentric": "На выдохе выжмите гантели вверх по сходящейся траектории, но не соударяйте их в верхней точке.",
       "breathing": "Вдох при опускании веса, выдох при подъёме.",
       "mistakes": "Слишком крутой угол скамьи (>45 градусов переносит нагрузку на дельты), избыточный прогиб поясницы."
-    }
+    },
+    "gear": [
+      "dumbbell",
+      "bench"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_dips",
@@ -51,14 +73,20 @@ window.DEFAULT_EXERCISES = [
       "Трицепс",
       "Передняя дельта"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"25\" y1=\"55\" x2=\"75\" y2=\"55\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><line x1=\"25\" y1=\"55\" x2=\"25\" y2=\"85\" stroke=\"currentColor\" stroke-width=\"3\"/><line x1=\"75\" y1=\"55\" x2=\"75\" y2=\"85\" stroke=\"currentColor\" stroke-width=\"3\"/><circle cx=\"48\" cy=\"22\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M48,27 L46,45 L42,68 L36,75\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M46,35 L38,45 L38,55 M46,35 L58,45 L58,55\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Примите упор на брусьях на прямых руках. Слегка наклоните корпус вперёд (около 20-30 градусов), согните ноги в коленях.",
       "eccentric": "На вдохе плавно опускайтесь вниз за счёт сгибания рук в локтях до угла 90 градусов в плечевом суставе, локти разводите умеренно.",
       "concentric": "На выдохе мощно вытолкните корпус вверх, сокращая грудные мышцы.",
       "breathing": "Вдох на опускании, выдох при выходе наверх.",
       "mistakes": "Слишком глубокий провал (риск травмы плечевых связок), строго вертикальный корпус (смещает акцент на трицепс)."
-    }
+    },
+    "gear": [
+      "dipbars"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ]
   },
   {
     "id": "ex_dumbbell_flyes",
@@ -70,14 +98,20 @@ window.DEFAULT_EXERCISES = [
       "Грудные мышцы (изоляция)",
       "Передняя дельта"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M20,70 L80,70 M30,70 L30,85 M70,70 L70,85\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M35,66 C42,62 58,62 65,66\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"30\" cy=\"64\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M45,60 C32,50 25,40 22,35\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M55,60 C68,50 75,40 78,35\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"20\" cy=\"33\" r=\"5\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"80\" cy=\"33\" r=\"5\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
     "instructions": {
       "initial": "Лягте на горизонтальную скамью, удерживая гантели над грудью нейтральным хватом (ладони смотрят друг на друга). Локти слегка согнуты.",
       "eccentric": "На вдохе разводите руки через стороны по широкой дуге, ощущая приятное растяжение грудных мышц.",
       "concentric": "На выдохе тем же движением «обнимите дерево», сводя гантели в исходную точку за счёт грудных.",
       "breathing": "Вдох при раскрытии грудной клетки, выдох при сведении рук.",
       "mistakes": "Полное выпрямление локтей (высокая нагрузка на суставы), слишком большой вес и опускание ниже уровня скамьи."
-    }
+    },
+    "gear": [
+      "dumbbell",
+      "bench"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_cable_crossover",
@@ -89,13 +123,25 @@ window.DEFAULT_EXERCISES = [
       "Внутренняя и нижняя часть груди",
       "Передняя дельта"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M15,20 L28,45 M85,20 L72,45\" stroke=\"currentColor\" stroke-width=\"2\" stroke-dasharray=\"3,3\"/><circle cx=\"50\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,40 L48,65 L43,85 M48,65 L56,85\" stroke=\"var(--accent)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M48,46 L32,52 L45,60 M48,46 L68,52 L55,60\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Встаньте по центру тренажера кроссовер, выставьте одну ногу вперед для баланса, корпус чуть наклонен вперед. Возьмите рукояти верхних блоков.",
       "eccentric": "На вдохе плавно разведите руки назад и в стороны до чувства раскрытия груди, локти держа зафиксированными.",
       "concentric": "На выдохе сведите рукояти перед собой вниз и к центру, максимально сжав грудные мышцы на пике сокращения.",
       "breathing": "Вдох на обратном движении, выдох при сведении рук.",
       "mistakes": "Помощь корпусом (раскачивание), чрезмерный сгиб локтей, превращающий сведение в жим."
+    },
+    "gear": [
+      "cable"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "evidence": {
+      "level": "emg",
+      "text": "Кроссовер с наклоном дал 93% активации груди от жима штанги лёжа.",
+      "sources": [
+        "ace_chest"
+      ]
     }
   },
   {
@@ -110,13 +156,28 @@ window.DEFAULT_EXERCISES = [
       "Передние дельты",
       "Мышцы кора"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"10\" y1=\"85\" x2=\"90\" y2=\"85\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"25\" cy=\"52\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M28,55 L58,62 L82,82\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M38,58 L36,72 L32,85 M42,59 L46,72 L48,85\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Упор лёжа, ладони шире плеч на уровне груди, пальцы направлены вперёд. Тело вытянуто в единую прямую линию от макушки до пят.",
       "eccentric": "На вдохе опустите корпус до касания пола грудью, удерживая локти под углом 45 градусов к туловищу.",
       "concentric": "На выдохе динамично отожмитесь обратно в исходное положение, сохраняя пресс напряжённым.",
       "breathing": "Вдох при опускании, выдох при подъёме.",
       "mistakes": "Провисание таза в пояснице, разведение локтей перпендикулярно корпусу, неполная амплитуда."
+    },
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "mass",
+      "fat",
+      "beginner"
+    ],
+    "evidence": {
+      "level": "rct",
+      "text": "При одинаковой нагрузке отжимания дали такой же рост груди и трицепса, как лёгкий жим лёжа. Группы маленькие: по 9 нетренированных мужчин.",
+      "sources": [
+        "kikuchi",
+        "calatayud"
+      ]
     }
   },
   {
@@ -132,14 +193,20 @@ window.DEFAULT_EXERCISES = [
       "Бицепс бедра",
       "Трапеции"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"15\" y1=\"80\" x2=\"85\" y2=\"80\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"15\" cy=\"80\" r=\"8\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"85\" cy=\"80\" r=\"8\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"48\" cy=\"30\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M48,35 L44,52 L56,70 L54,82\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M46,42 L50,65 L50,80\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Встаньте вплотную к штанге, стопы на ширине таза. Возьмитесь за гриф хватом на ширине плеч. Спина идеально прямая, грудь расправлена.",
       "eccentric": "На вдохе подконтрольно опустите штангу вдоль бедер и голеней, отводя таз назад до касания помоста.",
       "concentric": "На выдохе отталкивайтесь ногами от пола, выпрямляя колени и корпус синхронно. В верхней точке зафиксируйтесь без переразгибания в пояснице.",
       "breathing": "Глубокий вдох в живот перед стартом (внутрибрюшное давление), выдох после преодоления мёртвой точки.",
       "mistakes": "Скругление спины («горб»), отрыв штанги от ног, резкий рывок в начале движения."
-    }
+    },
+    "gear": [
+      "barbell"
+    ],
+    "goals": [
+      "strength",
+      "mass"
+    ]
   },
   {
     "id": "ex_pullups",
@@ -153,13 +220,26 @@ window.DEFAULT_EXERCISES = [
       "Бицепсы",
       "Трапеции"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"15\" y1=\"20\" x2=\"85\" y2=\"20\" stroke=\"currentColor\" stroke-width=\"5\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,40 L50,62 L46,78 L44,88\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M50,45 L35,32 L28,20 M50,45 L65,32 L72,20\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Повисните на перекладине хватом шире плеч. Сведите лопатки вниз, расправьте грудь, ноги скрещены или вытянуты.",
       "eccentric": "На вдохе подконтрольно опуститесь в нижнюю точку до полного растяжения широчайших, сохраняя контроль в плечах.",
       "concentric": "На выдохе за счёт сведения лопаток и опускания локтей подтянитесь вверх до уровня подбородка выше турника.",
       "breathing": "Вдох при опускании тела, выдох при подъёме вверх.",
       "mistakes": "Рывки ногами (киппинг), неполная амплитуда, задирание плеч к ушам."
+    },
+    "gear": [
+      "pullbar"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ],
+    "evidence": {
+      "level": "emg",
+      "text": "Широчайшие работают на 117–130% от максимального изометрического усилия. Нижняя трапеция включается сильнее, чем при обратном хвате.",
+      "sources": [
+        "youdas"
+      ]
     }
   },
   {
@@ -174,14 +254,20 @@ window.DEFAULT_EXERCISES = [
       "Трапециевидная",
       "Задняя дельта"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"35\" cy=\"32\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M37,37 L50,48 L52,68 L56,85\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><line x1=\"30\" y1=\"65\" x2=\"70\" y2=\"65\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"30\" cy=\"65\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"70\" cy=\"65\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M44,42 L46,55 L48,65\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>",
     "instructions": {
       "initial": "Наклоните корпус вперед под углом 45-60 градусов, колени слегка согнуты, спина прямая с естественным прогибом. Гриф штанги держите хватом чуть шире плеч.",
       "eccentric": "На вдохе медленно опустите штангу вниз, растягивая широчайшие мышцы.",
       "concentric": "На выдохе тяните штангу к низу живота за счёт движения локтей назад и вверх, сводя лопатки.",
       "breathing": "Вдох при опускании снаряда, выдох на пиковом усилии тяги.",
       "mistakes": "Круглая поясница, изменение угла наклона корпуса в процессе движения (читинг), тяга руками вместо спины."
-    }
+    },
+    "gear": [
+      "barbell"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ]
   },
   {
     "id": "ex_lat_pulldown",
@@ -194,14 +280,20 @@ window.DEFAULT_EXERCISES = [
       "Бицепсы",
       "Большая круглая"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"20\" y1=\"15\" x2=\"80\" y2=\"15\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"42\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,47 L50,70 L42,88 M50,70 L58,88\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M50,52 L36,35 L26,20 M50,52 L64,35 L74,20\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Сядьте в тренажёр, зафиксируйте бедра под валиками. Возьмитесь за длинную рукоять широким хватом, слегка отклоните корпус назад.",
       "eccentric": "На вдохе плавно верните рукоять вверх, чувствуя растяжение широчайших мышц.",
       "concentric": "На выдохе мощно потяните рукоять к верхней части груди, ведя локти вниз и назад, максимально сводя лопатки.",
       "breathing": "Вдох при возврате веса, выдох при тяге рукояти к груди.",
       "mistakes": "Слишком сильное отклонение корпуса назад (превращение упражнения в горизонтальную тягу), затягивание за голову."
-    }
+    },
+    "gear": [
+      "cable"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ]
   },
   {
     "id": "ex_seated_cable_row",
@@ -215,14 +307,20 @@ window.DEFAULT_EXERCISES = [
       "Широчайшие",
       "Задняя дельта"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M20,80 L75,80 M20,65 L20,85\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"62\" cy=\"45\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M62,50 L60,72 L45,78 L35,78\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M60,56 L46,60 L28,62\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M20,62 L28,62\" stroke=\"currentColor\" stroke-width=\"2\" stroke-dasharray=\"2,2\"/></svg>",
     "instructions": {
       "initial": "Сядьте на скамью, упритесь стопами в платформу, колени слегка согнуты. Возьмите V-образную рукоять, выпрямите спину.",
       "eccentric": "На вдохе позвольте блоку потянуть руки вперед с контролируемым растяжением мышц спины без скругления поясницы.",
       "concentric": "На выдохе потяните рукоять к поясу, направляя локти строго назад вдоль корпуса и сводя лопатки.",
       "breathing": "Вдох на расслаблении/растяжении, выдох при подтягивании рукояти.",
       "mistakes": "Раскачивание корпусом вперёд-назад по инерции, притягивание плеч к ушам."
-    }
+    },
+    "gear": [
+      "cable"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ]
   },
   {
     "id": "ex_hyperextension",
@@ -235,14 +333,19 @@ window.DEFAULT_EXERCISES = [
       "Ягодичные мышцы",
       "Бицепс бедра"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M25,85 L55,55 L75,85 M55,55 L55,85\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"35\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M37,39 L52,52 L70,68\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Отрегулируйте тренажер так, чтобы край подушки находился чуть ниже уровня сгиба тазобедренного сустава. Пятки упираются в платформу.",
       "eccentric": "На вдохе медленно наклоните корпус вниз до угла около 90 градусов, сохраняя нейтральное положение шеи и позвоночника.",
       "concentric": "На выдохе поднимите корпус силой ягодиц и разгибателей спины до одной прямой линии с ногами.",
       "breathing": "Вдох при наклоне вниз, выдох при возвращении в нейтраль.",
       "mistakes": "Переразгибание поясницы назад выше прямой линии, резкие рывки телом."
-    }
+    },
+    "gear": [
+      "machine"
+    ],
+    "goals": [
+      "beginner"
+    ]
   },
   {
     "id": "ex_squat",
@@ -256,13 +359,26 @@ window.DEFAULT_EXERCISES = [
       "Приводящие мышцы",
       "Кор"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"20\" y1=\"32\" x2=\"80\" y2=\"32\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"20\" cy=\"32\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"80\" cy=\"32\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"50\" cy=\"26\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,33 L46,55 L58,68 L56,86\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Штанга лежит на трапециях, стопы на ширине плеч или чуть шире, носки слегка развернуты наружу (20-30 градусов). Взгляд направлен вперед.",
       "eccentric": "На вдохе опускайтесь в присед, отводя таз назад и разводя колени сонаправленно носкам, до параллели бедра полу или чуть ниже.",
       "concentric": "На выдохе мощно отталкивайтесь всей поверхностью стоп от пола, выпрямляя ноги без заваливания коленей внутрь.",
       "breathing": "Вдох при опускании вниз, выдох на выходе из приседа.",
       "mistakes": "Сведение коленей внутрь («X-ноги»), отрыв пяток от пола, скругление поясницы в нижней точке («клевок тазом»)."
+    },
+    "gear": [
+      "barbell"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ],
+    "evidence": {
+      "level": "rct",
+      "text": "За 9 недель ягодицы выросли как от ягодичного моста, а передняя поверхность бедра сильнее.",
+      "sources": [
+        "plotkin"
+      ]
     }
   },
   {
@@ -276,14 +392,20 @@ window.DEFAULT_EXERCISES = [
       "Ягодичные",
       "Бицепсы бедер"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M25,35 L45,20 M15,40 L35,25\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"68\" cy=\"62\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M66,66 L52,70 L40,58 L32,32\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M65,72 L78,82\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/></svg>",
     "instructions": {
       "initial": "Сядьте в тренажёр, плотно прижмите поясницу и лопатки к спинке. Поставьте стопы на платформу на ширине плеч.",
       "eccentric": "Снимите упоры безопасности. На вдохе плавно опускайте платформу вниз, сгибая колени под углом около 90 градусов.",
       "concentric": "На выдохе выжмите платформу пятками и серединой стопы вверх, не разгибая колени до глухой блокировки (оставляйте мягкий изгиб).",
       "breathing": "Вдох при приближении платформы, выдох при жиме от себя.",
       "mistakes": "Полное «вщелкивание» коленей в суставную блокировку, отрыв поясницы и крестца от сиденья."
-    }
+    },
+    "gear": [
+      "machine"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ]
   },
   {
     "id": "ex_lunges",
@@ -297,14 +419,21 @@ window.DEFAULT_EXERCISES = [
       "Бицепс бедра",
       "Стабилизаторы"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"48\" cy=\"25\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M48,30 L48,50 L64,68 L64,85 M48,50 L32,68 L24,85\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M48,36 L52,50 L52,58\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"52\" cy=\"60\" r=\"4\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
     "instructions": {
       "initial": "Встаньте прямо, удерживая гантели в опущенных руках по бокам корпуса. Сделайте широкий шаг вперед одной ногой.",
       "eccentric": "На вдохе опуститесь вниз, сгибая оба колена до угла 90 градусов. Заднее колено почти касается пола.",
       "concentric": "На выдохе оттолкнитесь пяткой передней ноги и вернитесь в исходное положение или сделайте следующий шаг вперед.",
       "breathing": "Вдох при шаге и опускании, выдох при выталкивании наверх.",
       "mistakes": "Удар задним коленом о пол, наклон корпуса вперед с отрывом пятки опорной ноги."
-    }
+    },
+    "gear": [
+      "dumbbell",
+      "none"
+    ],
+    "goals": [
+      "mass",
+      "fat"
+    ]
   },
   {
     "id": "ex_romanian_deadlift",
@@ -317,14 +446,20 @@ window.DEFAULT_EXERCISES = [
       "Ягодичные мышцы",
       "Разгибатели спины"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"36\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M38,40 L52,48 L56,66 L56,86\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><line x1=\"38\" y1=\"68\" x2=\"68\" y2=\"68\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"38\" cy=\"68\" r=\"6\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"68\" cy=\"68\" r=\"6\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
     "instructions": {
       "initial": "Встаньте прямо, штанга в руках на уровне бедер хватом на ширине плеч. Ноги на ширине таза, колени слегка согнуты («мягкие»).",
       "eccentric": "На вдохе отводите таз далеко назад, скользя грифом вдоль передней поверхности бедер вниз до уровня чуть ниже колен. Спина абсолютно прямая.",
       "concentric": "На выдохе сокращением ягодиц и бицепсов бедра подайте таз вперед и вернитесь в вертикальное положение.",
       "breathing": "Вдох при наклоне с отводом таза, выдох при возврате в вертикаль.",
       "mistakes": "Сгибание коленей как в приседе, скругление поясничного отдела, увод штанги далеко от ног."
-    }
+    },
+    "gear": [
+      "barbell"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ]
   },
   {
     "id": "ex_leg_curls",
@@ -336,14 +471,19 @@ window.DEFAULT_EXERCISES = [
       "Двуглавая мышца бедра (бицепс бедра)",
       "Икроножные"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"15\" y1=\"65\" x2=\"65\" y2=\"65\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"22\" cy=\"58\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M26,62 L55,62 L72,45\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"74\" cy=\"43\" r=\"6\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
     "instructions": {
       "initial": "Лягте на живот в тренажёр. Валик расположен чуть ниже икроножных мышц (над ахилловым сухожилием). Возьмитесь за рукояти.",
       "eccentric": "На вдохе подконтрольно опустите валик вниз, полностью растягивая заднюю поверхность бедра.",
       "concentric": "На выдохе согните ноги в коленях, подтягивая валик максимально близко к ягодицам с секундной паузой на пике.",
       "breathing": "Вдох при разгибании ног, выдох при сгибании.",
       "mistakes": "Отрыв таза от скамьи при подъёме веса, резкое бесконтрольное падение валика вниз."
-    }
+    },
+    "gear": [
+      "machine"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_calf_raises",
@@ -355,13 +495,27 @@ window.DEFAULT_EXERCISES = [
       "Икроножная мышца",
       "Камбаловидная мышца"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"20\" y1=\"85\" x2=\"60\" y2=\"85\" stroke=\"currentColor\" stroke-width=\"5\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"22\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,27 L50,55 L50,75 L56,82\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Встаньте носками на край платформы или бруска, пятки свободно свисают. Колени прямые, но не заблокированные.",
       "eccentric": "На вдохе медленно опустите пятки как можно ниже, почувствовав глубокое растяжение в икроножных мышцах.",
       "concentric": "На выдохе максимально поднимитесь на носки вверх, задержитесь на секунду в пиковой точке.",
       "breathing": "Вдох при опускании пятки вниз, выдох при подъёме на носок.",
       "mistakes": "Пружинящие быстрые рывки без фиксации, недостаточная амплитуда растяжения внизу."
+    },
+    "gear": [
+      "none",
+      "machine"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "evidence": {
+      "level": "rct",
+      "text": "Стоя икры выросли в 2,7 раза сильнее, чем сидя: при прямом колене мышца работает в большем растяжении.",
+      "sources": [
+        "kinoshita"
+      ]
     }
   },
   {
@@ -376,14 +530,20 @@ window.DEFAULT_EXERCISES = [
       "Трицепс",
       "Верх груди"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"50\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,40 L50,65 L45,86 M50,65 L55,86\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><line x1=\"22\" y1=\"18\" x2=\"78\" y2=\"18\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"22\" cy=\"18\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"78\" cy=\"18\" r=\"7\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M50,44 L38,30 L34,20 M50,44 L62,30 L66,20\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Встаньте прямо, стопы на ширине плеч. Штанга лежит на передних дельтах и ключицах. Хват чуть шире плеч, ягодицы и пресс плотно зажаты.",
       "eccentric": "На вдохе опустите гриф обратно на ключицы подконтрольным движением, слегка убирая голову назад.",
       "concentric": "На выдохе выжмите штангу вертикально над головой, одновременно немного подавая корпус вперед, когда штанга пройдет лицо.",
       "breathing": "Вдох в нижней точке перед жимом, выдох при фиксации штанги над головой.",
       "mistakes": "Чрезмерный прогиб в пояснице, помощь ногами (превращение в толчковый жим швунг)."
-    }
+    },
+    "gear": [
+      "barbell"
+    ],
+    "goals": [
+      "strength",
+      "mass"
+    ]
   },
   {
     "id": "ex_seated_db_press",
@@ -396,13 +556,26 @@ window.DEFAULT_EXERCISES = [
       "Средняя дельта",
       "Трицепсы"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M35,45 L35,80 L65,80\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"38\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,43 L50,75 L62,75\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M48,46 L36,36 L34,22 M52,46 L64,36 L66,22\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"34\" cy=\"20\" r=\"4\" fill=\"var(--accent-glow)\"/><circle cx=\"66\" cy=\"20\" r=\"4\" fill=\"var(--accent-glow)\"/></svg>",
     "instructions": {
       "initial": "Сядьте на скамью с вертикальной или почти вертикальной спинкой (80-85 градусов). Поднимите гантели на уровень ушей, ладони направлены вперед.",
       "eccentric": "На вдохе опускайте гантели до уровня мочек ушей или чуть ниже, сохраняя локти под весом.",
       "concentric": "На выдохе выжмите гантели вверх по сходящейся дуге, не ударяя их друг о друга вверху.",
       "breathing": "Вдох при опускании гантелей, выдох при подъёме.",
       "mistakes": "Отрыв спины от спинки скамьи, слишком низкое опускание с болью в плечевом суставе."
+    },
+    "gear": [
+      "dumbbell",
+      "bench"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "evidence": {
+      "level": "emg",
+      "text": "Жим гантелей вверх дал лучшую активацию передней дельты среди 10 упражнений на плечи.",
+      "sources": [
+        "ace_delt"
+      ]
     }
   },
   {
@@ -414,14 +587,20 @@ window.DEFAULT_EXERCISES = [
     "targetMuscles": [
       "Средняя дельтовидная (ширина плеч)"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"50\" cy=\"28\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,33 L50,65 L44,88 M50,65 L56,88\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M50,38 L32,38 L16,42 M50,38 L68,38 L84,42\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"14\" cy=\"43\" r=\"4\" fill=\"var(--accent-glow)\"/><circle cx=\"86\" cy=\"43\" r=\"4\" fill=\"var(--accent-glow)\"/></svg>",
     "instructions": {
       "initial": "Встаньте прямо, гантели держите перед бедрами или по бокам. Локти чуть согнуты и зафиксированы на протяжении всего подхода.",
       "eccentric": "На вдохе медленно опустите руки обратно к бедрам, не бросая снаряды под силой тяжести.",
       "concentric": "На выдохе поднимите руки через стороны до уровня параллели с полом (до высоты плеч), ведя движение локтями вверх.",
       "breathing": "Вдох при опускании гантелей, выдох при подъёме в стороны.",
       "mistakes": "Задирание кистей выше локтей (акцент уходит на трапецию), читинг корпусом при старте."
-    }
+    },
+    "gear": [
+      "dumbbell"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ]
   },
   {
     "id": "ex_upright_row",
@@ -434,14 +613,17 @@ window.DEFAULT_EXERCISES = [
       "Трапеции",
       "Передняя дельта"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"50\" cy=\"25\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,30 L50,62 L44,85 M50,62 L56,85\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><line x1=\"35\" y1=\"45\" x2=\"65\" y2=\"45\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50,34 L38,32 L40,44 M50,34 L62,32 L60,44\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Встаньте прямо, штанга удерживается хватом на ширине плеч перед бедрами. Спина прямая.",
       "eccentric": "На вдохе плавно опустите гриф вдоль тела обратно к бёдрам.",
       "concentric": "На выдохе тяните штангу вверх вдоль корпуса, выводя локти выше кистей до уровня груди/ключиц.",
       "breathing": "Вдох при опускании, выдох при подъёме локтей вверх.",
       "mistakes": "Слишком узкий хват (вызывает защемление плечевых сухожилий), задирание штанги выше уровня подбородка."
-    }
+    },
+    "gear": [
+      "barbell"
+    ],
+    "goals": []
   },
   {
     "id": "ex_rear_delt_flyes",
@@ -454,13 +636,25 @@ window.DEFAULT_EXERCISES = [
       "Подостная",
       "Ромбовидные"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"35\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M38,39 L52,48 L56,66 L56,85\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M48,44 L32,32 L20,30 M48,44 L64,32 L76,30\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"18\" cy=\"30\" r=\"4\" fill=\"var(--accent-glow)\"/><circle cx=\"78\" cy=\"30\" r=\"4\" fill=\"var(--accent-glow)\"/></svg>",
     "instructions": {
       "initial": "Наклоните корпус вперед почти до параллели полу, колени мягкие, спина ровная. Гантели в опущенных руках с легким изгибом в локтях.",
       "eccentric": "На вдохе медленно опустите гантели вниз под действием гравитации.",
       "concentric": "На выдохе разведите руки в стороны назад, стараясь работать задними пучками дельт без сведения лопаток.",
       "breathing": "Вдох при сведении рук внизу, выдох при разведении.",
       "mistakes": "Подъём корпуса во время повторения, чрезмерное включение мышц спины вместо задней дельты."
+    },
+    "gear": [
+      "dumbbell"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "evidence": {
+      "level": "emg",
+      "text": "Разведения сидя в наклоне вошли в лучшие упражнения для задней дельты.",
+      "sources": [
+        "ace_delt"
+      ]
     }
   },
   {
@@ -474,14 +668,19 @@ window.DEFAULT_EXERCISES = [
       "Плечелучевая",
       "Брахиалис"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"50\" cy=\"25\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,30 L50,62 L45,86 M50,62 L55,86\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M50,35 L48,50 L58,40\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><line x1=\"46\" y1=\"38\" x2=\"70\" y2=\"38\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"46\" cy=\"38\" r=\"5\" fill=\"var(--accent-glow)\"/><circle cx=\"70\" cy=\"38\" r=\"5\" fill=\"var(--accent-glow)\"/></svg>",
     "instructions": {
       "initial": "Встаньте прямо, штанга в руках хватом снизу на ширине плеч. Локти прижаты к бокам, плечи опущены.",
       "eccentric": "На вдохе подконтрольно опустите штангу вниз, полностью разгибая руку, но не расслабляя мышцы.",
       "concentric": "На выдохе согните руки в локтях, поднимая гриф к груди. Локти остаются неподвижными.",
       "breathing": "Вдох при опускании штанги, выдох на сгибании.",
       "mistakes": "Раскачивание корпусом (читинг поясницей), увод локтей вперед или назад от корпуса."
-    }
+    },
+    "gear": [
+      "barbell"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_hammer_curls",
@@ -494,14 +693,19 @@ window.DEFAULT_EXERCISES = [
       "Плечелучевая мышца",
       "Бицепс"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"50\" cy=\"25\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,30 L50,62 L45,86 M50,62 L55,86\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M50,35 L44,48 L46,38 M50,35 L56,48 L54,38\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><rect x=\"43\" y=\"34\" width=\"6\" height=\"8\" rx=\"2\" fill=\"var(--accent-glow)\"/><rect x=\"51\" y=\"34\" width=\"6\" height=\"8\" rx=\"2\" fill=\"var(--accent-glow)\"/></svg>",
     "instructions": {
       "initial": "Стоя прямо, держите гантели нейтральным хватом (ладони обращены друг к другу). Плечи расправлены.",
       "eccentric": "На вдохе медленно опустите гантели вниз до полного выпрямления локтевого сустава.",
       "concentric": "На выдохе согните предплечья вверх, сохраняя нейтральный хват на всей траектории.",
       "breathing": "Вдох при опускании, выдох при подъёме гантелей.",
       "mistakes": "Вращение кисти во время движения, вынос локтей далеко вперед."
-    }
+    },
+    "gear": [
+      "dumbbell"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_preacher_curls",
@@ -513,14 +717,20 @@ window.DEFAULT_EXERCISES = [
       "Нижняя часть бицепса (пиковое сокращение)",
       "Брахиалис"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M35,60 L55,45 L55,85\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"42\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M44,40 L50,50 L48,40\" stroke=\"var(--accent)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"47\" cy=\"38\" r=\"4\" fill=\"var(--accent-glow)\"/></svg>",
     "instructions": {
       "initial": "Сядьте за скамью Скотта, плотно уприте подмышки в верхний срез наклонной подушки. Возьмите EZ-гриф хватом снизу.",
       "eccentric": "На вдохе медленно опускайте гриф почти до полного выпрямления рук (не допуская переразгибания сустава).",
       "concentric": "На выдохе согните руки силой бицепса, не отрывая трицепсы от опорной подушки.",
       "breathing": "Вдох при опускании снаряда, выдох при подъёме.",
       "mistakes": "Отрыв тела от сиденья и помощь корпусом, удар суставов в нижней точке."
-    }
+    },
+    "gear": [
+      "barbell",
+      "bench"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_skull_crushers",
@@ -531,14 +741,20 @@ window.DEFAULT_EXERCISES = [
     "targetMuscles": [
       "Длинная и латеральная головка трицепса"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M20,70 L80,70 M30,70 L30,85 M70,70 L70,85\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"28\" cy=\"62\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M32,65 L60,65\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M42,62 L42,42 L26,45\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"24\" cy=\"45\" r=\"5\" fill=\"var(--accent-glow)\"/></svg>",
     "instructions": {
       "initial": "Лягте на скамью, удерживая EZ-гриф на вытянутых руках под небольшим наклоном назад от вертикали (к макушке головы).",
       "eccentric": "На вдохе сгибайте только предплечья, опуская гриф за голову или к темени. Локти сохраняют постоянную ширину.",
       "concentric": "На выдохе выпрямите руки в локтях за счёт трицепсов, вернув вес в исходное положение.",
       "breathing": "Вдох при опускании штанги ко лбу/за голову, выдох при разгибании рук.",
       "mistakes": "Разведение локтей в стороны во время жима, движение плечевой кости вперед-назад."
-    }
+    },
+    "gear": [
+      "barbell",
+      "bench"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_tricep_pushdown",
@@ -549,14 +765,20 @@ window.DEFAULT_EXERCISES = [
     "targetMuscles": [
       "Латеральная и медиальная головка трицепса"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><path d=\"M65,15 L65,35\" stroke=\"currentColor\" stroke-width=\"2\" stroke-dasharray=\"2,2\"/><circle cx=\"45\" cy=\"30\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M45,35 L45,65 L40,86 M45,65 L50,86\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M46,38 L54,48 L56,62\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Встаньте перед верхним блоком, возьмите рукоять или канат. Локти зафиксируйте плотно по бокам корпуса, корпус чуть наклонен вперед.",
       "eccentric": "На вдохе дайте рукояти подняться до уровня груди (локти согнуты на 90 градусов), удерживая плечи неподвижными.",
       "concentric": "На выдохе мощно разогните руки вниз до полного выпрямления в локтях с фиксацией на 1 секунду.",
       "breathing": "Вдох при сгибании локтей вверх, выдох при разгибании книзу.",
       "mistakes": "Помощь весом всего тела («наваливание» на рукоять), гуляющие вперед-назад локти."
-    }
+    },
+    "gear": [
+      "cable"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ]
   },
   {
     "id": "ex_bench_dips",
@@ -568,14 +790,19 @@ window.DEFAULT_EXERCISES = [
       "Трицепс",
       "Передняя дельта"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"25\" y1=\"65\" x2=\"50\" y2=\"65\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"52\" cy=\"42\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,47 L50,68 L70,72 L82,82\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M48,50 L42,56 L42,65\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Упритесь ладонями в край скамьи сзади, пальцы направлены вперед. Ноги вытянуты вперед или согнуты в коленях.",
       "eccentric": "На вдохе опускайте таз вниз вдоль скамьи за счёт сгибания рук в локтях до прямого угла.",
       "concentric": "На выдохе разогните руки и вернитесь в исходное положение за счёт работы трицепсов.",
       "breathing": "Вдох при опускании вниз, выдох при подъёме.",
       "mistakes": "Удаление корпуса далеко вперед от скамьи (создает опасный вращательный момент в плечах)."
-    }
+    },
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner"
+    ]
   },
   {
     "id": "ex_plank",
@@ -589,14 +816,21 @@ window.DEFAULT_EXERCISES = [
       "Мышцы спины",
       "Ягодичные"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"15\" y1=\"80\" x2=\"85\" y2=\"80\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"24\" cy=\"56\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M26,60 L54,64 L80,78\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M32,62 L32,74 L40,78\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Примите упор на предплечья и носки. Локти строго под плечевыми суставами. Тело натянуто как струна.",
       "eccentric": "Статическое удержание: мышцы живота и ягодицы максимально напряжены, таз подкручен.",
       "concentric": "Сохраняйте ровное положение без прогиба в пояснице заданное количество секунд.",
       "breathing": "Не задерживайте дыхание: спокойные, размеренные вдохи и выдохи через нос и рот.",
       "mistakes": "Провисание таза в пояснице, задирание ягодиц вверх «горкой», запрокидывание головы."
-    }
+    },
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner",
+      "fat"
+    ],
+    "timed": true
   },
   {
     "id": "ex_crunches",
@@ -607,14 +841,19 @@ window.DEFAULT_EXERCISES = [
     "targetMuscles": [
       "Прямая мышца живота (верхняя часть)"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"15\" y1=\"80\" x2=\"85\" y2=\"80\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"26\" cy=\"60\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M30,64 C42,66 52,70 60,78 L72,60 L80,80\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M28,62 L22,54\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>",
     "instructions": {
       "initial": "Лягте на спину, согните ноги в коленях, стопы на полу. Руки у висков или скрещены на груди. Поясница прижата к полу.",
       "eccentric": "На вдохе медленно опустите лопатки обратно на коврик, сохраняя напряжение в прессе.",
       "concentric": "На выдохе скрутите верхнюю часть туловища к тазу, отрывая от пола только лопатки и сжимая пресс.",
       "breathing": "Вдох при опускании, акцентированный выдох при скручивании.",
       "mistakes": "Тяга шеи руками вперед с риском травмы шейного отдела, отрыв поясницы от пола."
-    }
+    },
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner"
+    ]
   },
   {
     "id": "ex_hanging_leg_raises",
@@ -627,14 +866,19 @@ window.DEFAULT_EXERCISES = [
       "Подвздошно-поясничная",
       "Косые мышцы"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"25\" y1=\"15\" x2=\"75\" y2=\"15\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"35\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,40 L50,62 L32,62\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M50,42 L42,28 L46,16 M50,42 L58,28 L54,16\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Повисните на турнике прямым хватом, тело выпрямлено, без раскачки.",
       "eccentric": "На вдохе медленно и подконтрольно опустите ноги вниз, не давая телу раскачиваться.",
       "concentric": "На выдохе поднимите прямые или чуть согнутые ноги вперед до параллели полу или выше (подкручивая таз к ребрам).",
       "breathing": "Вдох при опускании ног, выдох при подъёме.",
       "mistakes": "Раскачивание корпусом по инерции, подъём ног за счёт сгибателей бедра без подкручивания таза."
-    }
+    },
+    "gear": [
+      "pullbar"
+    ],
+    "goals": [
+      "mass"
+    ]
   },
   {
     "id": "ex_russian_twists",
@@ -647,14 +891,20 @@ window.DEFAULT_EXERCISES = [
       "Прямая мышца",
       "Глубокие стабилизаторы"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><line x1=\"15\" y1=\"85\" x2=\"85\" y2=\"85\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"42\" cy=\"42\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M44,47 L56,70 L72,62 L82,82\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><circle cx=\"66\" cy=\"52\" r=\"5\" fill=\"var(--accent-glow)\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
     "instructions": {
       "initial": "Сядьте на пол, отклоните корпус назад под 45 градусов, оторвите стопы от пола и согните колени (поза V). Возьмите вес или сложите ладони вместе.",
       "eccentric": "На вдохе вернитесь в центр перед следующим поворотом.",
       "concentric": "На выдохе поверните корпус вправо, касаясь руками пола возле бедра. На следующем выдохе повернитесь влево.",
       "breathing": "Короткий выдох на каждом повороте корпуса, вдох при переходе через центр.",
       "mistakes": "Движение только руками без поворота грудной клетки, скругление поясницы."
-    }
+    },
+    "gear": [
+      "none",
+      "dumbbell"
+    ],
+    "goals": [
+      "fat"
+    ]
   },
   {
     "id": "ex_stomach_vacuum",
@@ -666,13 +916,1330 @@ window.DEFAULT_EXERCISES = [
       "Поперечная мышца живота (плоский живот)",
       "Диафрагма"
     ],
-    "svgIcon": "<svg viewBox=\"0 0 100 100\" class=\"ex-svg\"><circle cx=\"50\" cy=\"25\" r=\"5\" fill=\"var(--accent)\"/><path d=\"M50,30 L50,42 Q42,50 50,58 L50,65 L44,86 M50,65 L56,86\" stroke=\"var(--accent)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M44,48 Q49,50 44,54\" stroke=\"currentColor\" stroke-width=\"2\" fill=\"none\"/></svg>",
     "instructions": {
       "initial": "Встаньте прямо или наклонитесь с опорой руками на колени. Сделайте глубокий вдох, а затем полный глубокий выдох, освободив лёгкие от воздуха.",
       "eccentric": "После задержки плавно расслабьте живот и сделайте спокойный мягкий вдох.",
       "concentric": "На задержке дыхания после выдоха втяните живот максимально внутрь под рёбра к позвоночнику. Удерживайте вакуум 15-30 секунд.",
       "breathing": "Полный выдох перед втягиванием живота, фиксация на задержке дыхания.",
       "mistakes": "Попытка дышать во время вакуума, выполнение упражнения на полный желудок."
+    },
+    "gear": [
+      "none"
+    ],
+    "goals": [],
+    "timed": true
+  },
+  {
+    "id": "ex_pec_deck",
+    "name": "Сведение рук в тренажёре",
+    "nameEn": "Pec Deck",
+    "category": "chest",
+    "categoryName": "Грудь",
+    "targetMuscles": [
+      "Большая грудная",
+      "Передняя дельта"
+    ],
+    "gear": [
+      "machine"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Сядьте так, чтобы рукояти были на уровне груди. Лопатки прижаты к спинке.",
+      "eccentric": "Плавно разведите руки до лёгкого растяжения груди.",
+      "concentric": "Сведите руки перед собой усилием груди, не сгибая локти сильнее.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Заводить руки слишком далеко назад и бить рукоятями друг о друга."
+    },
+    "evidence": {
+      "level": "emg",
+      "text": "98% активации груди от жима штанги лёжа. Для изоляции это почти предел.",
+      "sources": [
+        "ace_chest"
+      ]
     }
+  },
+  {
+    "id": "ex_chest_supported_row",
+    "name": "Тяга гантелей лёжа на наклонной",
+    "nameEn": "Chest-Supported Row",
+    "category": "back",
+    "categoryName": "Спина",
+    "targetMuscles": [
+      "Средняя трапеция",
+      "Широчайшие",
+      "Задняя и средняя дельта"
+    ],
+    "gear": [
+      "dumbbell",
+      "bench"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Лягте грудью на скамью под 45°, гантели висят на прямых руках.",
+      "eccentric": "Опустите гантели под контролем до полного выпрямления рук.",
+      "concentric": "Тяните локти назад и вверх, сводя лопатки.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Отрывать грудь от скамьи и дёргать вес."
+    },
+    "evidence": {
+      "level": "emg",
+      "text": "Тяга под 45° вошла в лучшие упражнения для средней и задней дельты, а поясница при этом отдыхает.",
+      "sources": [
+        "ace_delt"
+      ]
+    }
+  },
+  {
+    "id": "ex_single_arm_db_row",
+    "name": "Тяга гантели одной рукой",
+    "nameEn": "One-Arm Dumbbell Row",
+    "category": "back",
+    "categoryName": "Спина",
+    "targetMuscles": [
+      "Широчайшие",
+      "Ромбовидные",
+      "Бицепс"
+    ],
+    "gear": [
+      "dumbbell",
+      "bench"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Упритесь рукой в скамью, спина параллельна полу и прямая.",
+      "eccentric": "Опустите гантель вниз, давая лопатке выйти вперёд.",
+      "concentric": "Тяните локоть к бедру, а не к плечу.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Разворачивать корпус и тянуть рывком."
+    }
+  },
+  {
+    "id": "ex_inverted_row",
+    "name": "Горизонтальные подтягивания",
+    "nameEn": "Inverted Row",
+    "category": "back",
+    "categoryName": "Спина",
+    "targetMuscles": [
+      "Широчайшие",
+      "Средняя трапеция",
+      "Бицепс"
+    ],
+    "gear": [
+      "pullbar",
+      "dipbars",
+      "none"
+    ],
+    "goals": [
+      "mass",
+      "beginner",
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Лягте под низкую перекладину, брусья или крепкий стол. Возьмитесь хватом шире плеч, тело прямое, пятки на полу.",
+      "eccentric": "Опуститесь до прямых рук, не прогибая таз.",
+      "concentric": "Подтяните грудь к перекладине, сводя лопатки.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Провисать в пояснице и тянуть подбородком вперёд."
+    }
+  },
+  {
+    "id": "ex_chinups",
+    "name": "Подтягивания обратным хватом",
+    "nameEn": "Chin-ups",
+    "category": "back",
+    "categoryName": "Спина",
+    "targetMuscles": [
+      "Широчайшие",
+      "Бицепс",
+      "Большая грудная"
+    ],
+    "gear": [
+      "pullbar"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ],
+    "instructions": {
+      "initial": "Повисните на турнике, ладони к себе, хват на ширине плеч.",
+      "eccentric": "Опуститесь под контролем до почти прямых рук.",
+      "concentric": "Подтяните подбородок выше перекладины, ведя локти вниз.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Раскачиваться и обрывать движение на половине."
+    },
+    "evidence": {
+      "level": "emg",
+      "text": "Бицепс и большая грудная активируются заметно сильнее, чем при прямом хвате.",
+      "sources": [
+        "youdas"
+      ]
+    }
+  },
+  {
+    "id": "ex_negative_pullups",
+    "name": "Негативные подтягивания",
+    "nameEn": "Negative Pull-ups",
+    "category": "back",
+    "categoryName": "Спина",
+    "targetMuscles": [
+      "Широчайшие",
+      "Бицепс"
+    ],
+    "gear": [
+      "pullbar"
+    ],
+    "goals": [
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Встаньте на табурет и займите верхнюю точку: подбородок над турником.",
+      "eccentric": "Опускайтесь 3–5 секунд до прямых рук.",
+      "concentric": "Снова поднимитесь с опоры, без рывка руками.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Падать вниз за секунду и спрыгивать без контроля."
+    }
+  },
+  {
+    "id": "ex_band_row",
+    "name": "Тяга резины к поясу",
+    "nameEn": "Band Row",
+    "category": "back",
+    "categoryName": "Спина",
+    "targetMuscles": [
+      "Широчайшие",
+      "Ромбовидные",
+      "Бицепс"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner",
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Закрепите резину в двери на уровне пояса и отойдите до лёгкого натяжения.",
+      "eccentric": "Вытяните руки вперёд, чувствуя растяжение спины.",
+      "concentric": "Тяните рукояти к поясу, сводя лопатки.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Отклоняться назад, чтобы «дотянуть» повтор."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Обзор 8 исследований: резина даёт такой же прирост силы, как тренажёры и свободные веса.",
+      "sources": [
+        "lopes"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_pulldown",
+    "name": "Тяга резины сверху",
+    "nameEn": "Band Pulldown",
+    "category": "back",
+    "categoryName": "Спина",
+    "targetMuscles": [
+      "Широчайшие",
+      "Большая круглая",
+      "Бицепс"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Закрепите резину вверху двери, встаньте на колено или слегка отклонитесь.",
+      "eccentric": "Плавно отпустите руки вверх до растяжения широчайших.",
+      "concentric": "Тяните локти вниз к рёбрам, грудь вперёд.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Сгибаться в корпусе и тянуть только руками."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Эластичное сопротивление даёт сопоставимый прирост силы с обычными весами.",
+      "sources": [
+        "lopes"
+      ]
+    }
+  },
+  {
+    "id": "ex_hip_thrust",
+    "name": "Ягодичный мост со штангой",
+    "nameEn": "Barbell Hip Thrust",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Большая ягодичная",
+      "Задняя поверхность бедра"
+    ],
+    "gear": [
+      "barbell",
+      "bench"
+    ],
+    "goals": [
+      "mass",
+      "strength"
+    ],
+    "instructions": {
+      "initial": "Упритесь лопатками в скамью, штанга на сгибе бёдер, стопы на ширине плеч.",
+      "eccentric": "Опустите таз вниз, не касаясь пола штангой.",
+      "concentric": "Вытолкните таз вверх до прямой линии плечи–колени и сожмите ягодицы.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Прогибать поясницу вместо работы таза."
+    },
+    "evidence": {
+      "level": "rct",
+      "text": "За 9 недель ягодицы выросли не меньше, чем от приседаний. Небольшая разница была в пользу моста, но с большим разбросом.",
+      "sources": [
+        "plotkin"
+      ]
+    }
+  },
+  {
+    "id": "ex_bulgarian_split_squat",
+    "name": "Болгарские выпады",
+    "nameEn": "Bulgarian Split Squat",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Квадрицепс",
+      "Большая ягодичная"
+    ],
+    "gear": [
+      "dumbbell",
+      "none"
+    ],
+    "goals": [
+      "mass",
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Поставьте заднюю стопу на скамью или стул, передняя — в большом шаге.",
+      "eccentric": "Опуститесь вниз, пока бедро передней ноги не станет почти параллельно полу.",
+      "concentric": "Поднимитесь, толкаясь всей стопой передней ноги.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Отрывать пятку передней ноги и заваливать колено внутрь."
+    }
+  },
+  {
+    "id": "ex_seated_leg_curl",
+    "name": "Сгибание ног сидя",
+    "nameEn": "Seated Leg Curl",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Бицепс бедра",
+      "Полусухожильная",
+      "Полуперепончатая"
+    ],
+    "gear": [
+      "machine"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Сядьте плотно, валик над коленями, второй валик над ахиллом.",
+      "eccentric": "Плавно выпрямите ноги почти полностью.",
+      "concentric": "Согните колени до упора, не отрывая таз.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Отрывать бёдра от сиденья и бросать вес обратно."
+    },
+    "evidence": {
+      "level": "rct",
+      "text": "Сидя бицепс бедра вырос заметно сильнее, чем в сгибаниях лёжа: сгиб в тазобедренном суставе растягивает мышцу.",
+      "sources": [
+        "maeo2021"
+      ]
+    }
+  },
+  {
+    "id": "ex_leg_extension",
+    "name": "Разгибание ног сидя",
+    "nameEn": "Leg Extension",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Квадрицепс",
+      "Прямая мышца бедра"
+    ],
+    "gear": [
+      "machine"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Сядьте, валик над стопой, колено на оси тренажёра.",
+      "eccentric": "Опустите вес, глубоко сгибая колени.",
+      "concentric": "Выпрямите ноги без рывка и задержитесь на секунду.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Бросать вес и работать только в верхней части."
+    },
+    "evidence": {
+      "level": "rct",
+      "text": "Работа в растянутой части амплитуды дала больший рост квадрицепса, чем в укороченной.",
+      "sources": [
+        "pedrosa"
+      ]
+    }
+  },
+  {
+    "id": "ex_goblet_squat",
+    "name": "Гоблет-присед",
+    "nameEn": "Goblet Squat",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Квадрицепс",
+      "Большая ягодичная",
+      "Кор"
+    ],
+    "gear": [
+      "dumbbell",
+      "kettlebell"
+    ],
+    "goals": [
+      "beginner",
+      "fat",
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Держите гирю или гантель у груди двумя руками, стопы чуть шире плеч.",
+      "eccentric": "Сядьте вниз между бёдрами, спина прямая.",
+      "concentric": "Поднимитесь, толкаясь всей стопой.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Округлять спину и отрывать пятки."
+    }
+  },
+  {
+    "id": "ex_air_squat",
+    "name": "Приседания без веса",
+    "nameEn": "Bodyweight Squat",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Квадрицепс",
+      "Большая ягодичная"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner",
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Стопы чуть шире плеч, носки слегка наружу, руки вперёд для баланса.",
+      "eccentric": "Сядьте вниз, отводя таз назад, до параллели или ниже.",
+      "concentric": "Встаньте, толкаясь всей стопой.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Сводить колени внутрь и заваливаться на носки."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Сеты с низким весом растят мышцы так же, если доводить их близко к отказу.",
+      "sources": [
+        "loads"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_squat",
+    "name": "Приседания с резиной",
+    "nameEn": "Band Squat",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Квадрицепс",
+      "Большая ягодичная"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "fat",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Встаньте на резину, концы держите у плеч, спина прямая.",
+      "eccentric": "Присядьте до параллели, сохраняя натяжение.",
+      "concentric": "Встаньте, толкаясь всей стопой.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Позволять резине тянуть корпус вперёд."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Эластичное сопротивление даёт сопоставимый прирост силы с обычными весами.",
+      "sources": [
+        "lopes"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_rdl",
+    "name": "Румынская тяга с резиной",
+    "nameEn": "Band Romanian Deadlift",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Бицепс бедра",
+      "Большая ягодичная",
+      "Разгибатели спины"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Встаньте на резину, концы в руках, колени чуть согнуты.",
+      "eccentric": "Отводите таз назад, наклоняясь с прямой спиной до растяжения бедра.",
+      "concentric": "Выведите таз вперёд и выпрямитесь.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Округлять спину и сгибать колени, превращая тягу в присед."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Эластичное сопротивление даёт сопоставимый прирост силы с обычными весами.",
+      "sources": [
+        "lopes"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_leg_curl",
+    "name": "Сгибание ног с резиной лёжа",
+    "nameEn": "Band Leg Curl",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Бицепс бедра"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Закрепите резину у пола и накиньте на щиколотку. Лягте на живот.",
+      "eccentric": "Плавно выпрямите ногу, сопротивляясь резине.",
+      "concentric": "Согните колено, подтягивая пятку к ягодице.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Отрывать таз от пола."
+    }
+  },
+  {
+    "id": "ex_band_hip_thrust",
+    "name": "Ягодичный мост с резиной",
+    "nameEn": "Band Glute Bridge",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Большая ягодичная",
+      "Задняя поверхность бедра"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Лягте на спину, резина поперёк таза, концы прижаты ладонями к полу.",
+      "eccentric": "Опустите таз почти до пола.",
+      "concentric": "Поднимите таз до прямой линии и сожмите ягодицы.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Прогибать поясницу вместо работы таза."
+    }
+  },
+  {
+    "id": "ex_glute_bridge",
+    "name": "Ягодичный мост",
+    "nameEn": "Glute Bridge",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Большая ягодичная",
+      "Задняя поверхность бедра"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner",
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Лягте на спину, стопы на полу близко к тазу.",
+      "eccentric": "Плавно опустите таз к полу.",
+      "concentric": "Поднимите таз до прямой линии плечи–колени, сожмите ягодицы.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Прогибать поясницу и упираться носками."
+    }
+  },
+  {
+    "id": "ex_single_leg_bridge",
+    "name": "Мост на одной ноге",
+    "nameEn": "Single-Leg Glute Bridge",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Большая ягодичная",
+      "Задняя поверхность бедра"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Лягте на спину, одну ногу поднимите вверх, другая стоит на полу.",
+      "eccentric": "Опустите таз, не касаясь пола.",
+      "concentric": "Поднимите таз усилием опорной ноги, сохраняя таз ровным.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Заваливать таз набок."
+    }
+  },
+  {
+    "id": "ex_kettlebell_swing",
+    "name": "Махи гирей",
+    "nameEn": "Kettlebell Swing",
+    "category": "legs",
+    "categoryName": "Ноги",
+    "targetMuscles": [
+      "Большая ягодичная",
+      "Бицепс бедра",
+      "Разгибатели спины"
+    ],
+    "gear": [
+      "kettlebell"
+    ],
+    "goals": [
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Встаньте над гирей, отведите таз назад, возьмитесь двумя руками.",
+      "eccentric": "Гиря уходит назад между ног, таз идёт назад, спина прямая.",
+      "concentric": "Резко выпрямите таз: гиря сама взлетит до уровня груди.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Поднимать гирю руками и приседать вместо наклона."
+    }
+  },
+  {
+    "id": "ex_bent_arm_lateral",
+    "name": "Разведения с согнутыми руками",
+    "nameEn": "Bent-Arm Lateral Raise",
+    "category": "shoulders",
+    "categoryName": "Плечи",
+    "targetMuscles": [
+      "Средняя дельта",
+      "Трапеция"
+    ],
+    "gear": [
+      "dumbbell"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Встаньте прямо, локти согнуты под 90°, гантели у корпуса.",
+      "eccentric": "Плавно опустите локти к корпусу.",
+      "concentric": "Поднимите локти в стороны до линии плеч.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Задирать плечи к ушам и раскачиваться."
+    },
+    "evidence": {
+      "level": "emg",
+      "text": "Вошли в лучшие упражнения для средней дельты в сравнении ACE.",
+      "sources": [
+        "ace_delt"
+      ]
+    }
+  },
+  {
+    "id": "ex_face_pull",
+    "name": "Тяга каната к лицу",
+    "nameEn": "Face Pull",
+    "category": "shoulders",
+    "categoryName": "Плечи",
+    "targetMuscles": [
+      "Задняя дельта",
+      "Средняя трапеция",
+      "Вращатели плеча"
+    ],
+    "gear": [
+      "cable"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Поставьте блок на уровне лица, возьмите канат нейтральным хватом.",
+      "eccentric": "Вытяните руки вперёд под контролем.",
+      "concentric": "Тяните канат к лицу, разводя локти в стороны.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Откидывать корпус назад."
+    }
+  },
+  {
+    "id": "ex_band_face_pull",
+    "name": "Тяга резины к лицу",
+    "nameEn": "Band Face Pull",
+    "category": "shoulders",
+    "categoryName": "Плечи",
+    "targetMuscles": [
+      "Задняя дельта",
+      "Средняя трапеция"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Закрепите резину на уровне лица и возьмите её двумя руками.",
+      "eccentric": "Вытяните руки вперёд под контролем.",
+      "concentric": "Тяните резину к лицу, разводя локти в стороны.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Откидывать корпус назад."
+    }
+  },
+  {
+    "id": "ex_band_lateral_raise",
+    "name": "Разведения с резиной",
+    "nameEn": "Band Lateral Raise",
+    "category": "shoulders",
+    "categoryName": "Плечи",
+    "targetMuscles": [
+      "Средняя дельта"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Встаньте на резину, концы в руках у бёдер, локти чуть согнуты.",
+      "eccentric": "Плавно опустите руки к корпусу.",
+      "concentric": "Поднимите руки в стороны до линии плеч.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Раскачиваться и задирать плечи к ушам."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Эластичное сопротивление даёт сопоставимый прирост силы с обычными весами.",
+      "sources": [
+        "lopes"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_pull_apart",
+    "name": "Растягивание резины перед собой",
+    "nameEn": "Band Pull-Apart",
+    "category": "shoulders",
+    "categoryName": "Плечи",
+    "targetMuscles": [
+      "Задняя дельта",
+      "Ромбовидные"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "beginner",
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Возьмите резину перед грудью на прямых руках.",
+      "eccentric": "Плавно верните руки вперёд, не теряя натяжения.",
+      "concentric": "Разведите руки в стороны, сводя лопатки.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Сгибать локти и прогибать поясницу."
+    }
+  },
+  {
+    "id": "ex_pike_pushups",
+    "name": "Отжимания уголком",
+    "nameEn": "Pike Push-ups",
+    "category": "shoulders",
+    "categoryName": "Плечи",
+    "targetMuscles": [
+      "Передняя и средняя дельта",
+      "Трицепс"
+    ],
+    "gear": [
+      "none",
+      "handles"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Встаньте в упор, поднимите таз вверх, чтобы тело образовало угол.",
+      "eccentric": "Согните руки, опуская макушку к полу.",
+      "concentric": "Выжмите тело обратно, сохраняя таз высоко.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Опускать таз, превращая движение в обычное отжимание."
+    }
+  },
+  {
+    "id": "ex_incline_curl",
+    "name": "Сгибания на наклонной скамье",
+    "nameEn": "Incline Dumbbell Curl",
+    "category": "arms",
+    "categoryName": "Руки",
+    "targetMuscles": [
+      "Длинная головка бицепса",
+      "Плечевая мышца"
+    ],
+    "gear": [
+      "dumbbell",
+      "bench"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Сядьте на скамью под 45–60°, руки с гантелями свисают за линией корпуса.",
+      "eccentric": "Полностью выпрямите руки, чувствуя растяжение бицепса.",
+      "concentric": "Согните локти, не выводя плечи вперёд.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Выводить локти вперёд и бросать вес вниз."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Обзор 8 исследований: работа в растянутом положении может давать больший рост, но эффект пока нельзя отделить от объёма работы.",
+      "sources": [
+        "wolf"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_curl",
+    "name": "Сгибания с резиной",
+    "nameEn": "Band Curl",
+    "category": "arms",
+    "categoryName": "Руки",
+    "targetMuscles": [
+      "Бицепс",
+      "Плечевая мышца"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Встаньте на резину, рукояти в опущенных руках.",
+      "eccentric": "Опускайте руки под контролем.",
+      "concentric": "Согните локти, прижимая их к корпусу.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Раскачивать корпус."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Эластичное сопротивление даёт сопоставимый прирост силы с обычными весами.",
+      "sources": [
+        "lopes"
+      ]
+    }
+  },
+  {
+    "id": "ex_overhead_triceps_ext",
+    "name": "Разгибания из-за головы на блоке",
+    "nameEn": "Overhead Cable Extension",
+    "category": "arms",
+    "categoryName": "Руки",
+    "targetMuscles": [
+      "Длинная головка трицепса",
+      "Латеральная головка"
+    ],
+    "gear": [
+      "cable"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Встаньте спиной к нижнему блоку, шаг вперёд, локти у головы смотрят вверх.",
+      "eccentric": "Согните локти, заводя кисти за голову до растяжения.",
+      "concentric": "Выпрямите руки вверх, локти не разводите.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Разводить локти и прогибаться в пояснице."
+    },
+    "evidence": {
+      "level": "rct",
+      "text": "На 12 неделе трицепс вырос примерно на 40% сильнее, чем от разгибаний на верхнем блоке. Исследование небольшое: 21 человек.",
+      "sources": [
+        "maeo2022"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_overhead_ext",
+    "name": "Разгибания резины из-за головы",
+    "nameEn": "Band Overhead Extension",
+    "category": "arms",
+    "categoryName": "Руки",
+    "targetMuscles": [
+      "Длинная головка трицепса"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Встаньте задней ногой на резину, рукоять за головой, локоть вверх.",
+      "eccentric": "Согните локоть, заводя кисть за голову.",
+      "concentric": "Выпрямите руку вверх, локоть на месте.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Разводить локоть и прогибать поясницу."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "То же положение руки, что и в исследовании на блоке, но с резиной. Прямого теста на резине нет.",
+      "sources": [
+        "maeo2022",
+        "lopes"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_chest_press",
+    "name": "Жим резины от груди",
+    "nameEn": "Band Chest Press",
+    "category": "chest",
+    "categoryName": "Грудь",
+    "targetMuscles": [
+      "Большая грудная",
+      "Трицепс",
+      "Передняя дельта"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "mass",
+      "beginner",
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Закрепите резину за спиной на уровне груди, шаг вперёд, рукояти у груди.",
+      "eccentric": "Плавно верните рукояти к груди.",
+      "concentric": "Выжмите руки вперёд и слегка внутрь.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Прогибать поясницу и разводить локти на 90°."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Эластичное сопротивление даёт сопоставимый прирост силы. Отжимания с резиной сопоставимы с жимом штанги при равной активации мышц.",
+      "sources": [
+        "lopes",
+        "calatayud"
+      ]
+    }
+  },
+  {
+    "id": "ex_handle_pushups",
+    "name": "Отжимания на упорах",
+    "nameEn": "Push-up Handle Push-ups",
+    "category": "chest",
+    "categoryName": "Грудь",
+    "targetMuscles": [
+      "Большая грудная",
+      "Трицепс",
+      "Передняя дельта"
+    ],
+    "gear": [
+      "handles"
+    ],
+    "goals": [
+      "mass",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Поставьте упоры чуть шире плеч, тело прямое от головы до пяток.",
+      "eccentric": "Опуститесь ниже уровня рукоятей до растяжения груди.",
+      "concentric": "Выжмите тело вверх, не поднимая таз первым.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Провисать в пояснице и разводить локти на 90°."
+    },
+    "evidence": {
+      "level": "review",
+      "text": "Исследования есть для обычных отжиманий. Упоры добавляют глубину и снимают нагрузку с запястий, но отдельно их не проверяли.",
+      "sources": [
+        "kikuchi",
+        "wolf"
+      ]
+    }
+  },
+  {
+    "id": "ex_decline_pushups",
+    "name": "Отжимания с ногами на опоре",
+    "nameEn": "Decline Push-ups",
+    "category": "chest",
+    "categoryName": "Грудь",
+    "targetMuscles": [
+      "Верх груди",
+      "Передняя дельта",
+      "Трицепс"
+    ],
+    "gear": [
+      "none",
+      "handles"
+    ],
+    "goals": [
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Поставьте стопы на стул, руки на пол или упоры.",
+      "eccentric": "Опуститесь грудью вниз, тело прямое.",
+      "concentric": "Выжмите тело вверх.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Провисать в пояснице."
+    }
+  },
+  {
+    "id": "ex_hanging_knee_raise",
+    "name": "Подъём коленей в висе",
+    "nameEn": "Hanging Knee Raise",
+    "category": "core",
+    "categoryName": "Кор",
+    "targetMuscles": [
+      "Прямая мышца живота",
+      "Сгибатели бедра"
+    ],
+    "gear": [
+      "pullbar",
+      "dipbars"
+    ],
+    "goals": [
+      "beginner",
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Повисните на турнике, плечи опущены.",
+      "eccentric": "Опустите ноги медленно, без раскачки.",
+      "concentric": "Подтяните колени к груди, скручивая таз.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Раскачиваться и поднимать ноги только за счёт бедра."
+    }
+  },
+  {
+    "id": "ex_l_sit",
+    "name": "Уголок на брусьях",
+    "nameEn": "L-Sit",
+    "category": "core",
+    "categoryName": "Кор",
+    "targetMuscles": [
+      "Прямая мышца живота",
+      "Квадрицепс",
+      "Трицепс"
+    ],
+    "gear": [
+      "dipbars"
+    ],
+    "goals": [
+      "strength"
+    ],
+    "instructions": {
+      "initial": "Примите упор на брусьях на прямых руках, плечи опущены.",
+      "eccentric": "Держите прямые ноги параллельно полу.",
+      "concentric": "Не опускайте ноги до конца времени.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Заваливать плечи к ушам и сгибать колени."
+    },
+    "timed": true
+  },
+  {
+    "id": "ex_dead_bug",
+    "name": "Мёртвый жук",
+    "nameEn": "Dead Bug",
+    "category": "core",
+    "categoryName": "Кор",
+    "targetMuscles": [
+      "Глубокие мышцы живота",
+      "Прямая мышца живота"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Лягте на спину, руки вверх, бёдра вертикально, поясница прижата к полу.",
+      "eccentric": "Верните руку и ногу в исходное положение.",
+      "concentric": "Выпрямите противоположные руку и ногу, не отрывая поясницу.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Отрывать поясницу от пола."
+    }
+  },
+  {
+    "id": "ex_bird_dog",
+    "name": "Птица-собака",
+    "nameEn": "Bird Dog",
+    "category": "core",
+    "categoryName": "Кор",
+    "targetMuscles": [
+      "Разгибатели спины",
+      "Большая ягодичная",
+      "Мышцы живота"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Встаньте на четвереньки, спина ровная.",
+      "eccentric": "Верните руку и ногу на пол под контролем.",
+      "concentric": "Вытяните противоположные руку и ногу в одну линию, задержитесь.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Прогибаться в пояснице и разворачивать таз."
+    },
+    "evidence": {
+      "level": "emg",
+      "text": "Одно из упражнений с низкой нагрузкой на позвоночник из лабораторных работ МакГилла.",
+      "sources": [
+        "mcgill"
+      ]
+    }
+  },
+  {
+    "id": "ex_side_plank",
+    "name": "Боковая планка",
+    "nameEn": "Side Plank",
+    "category": "core",
+    "categoryName": "Кор",
+    "targetMuscles": [
+      "Косые мышцы живота",
+      "Квадратная мышца поясницы"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "beginner",
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Лягте на бок, упритесь предплечьем, поднимите таз до прямой линии.",
+      "eccentric": "Держите таз высоко всё время.",
+      "concentric": "Удерживайте положение без провисания.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Опускать таз и разворачивать грудь к полу."
+    },
+    "timed": true,
+    "evidence": {
+      "level": "emg",
+      "text": "Косые мышцы работают примерно на 50% максимума при небольшой нагрузке на поясницу.",
+      "sources": [
+        "mcgill"
+      ]
+    }
+  },
+  {
+    "id": "ex_band_pallof",
+    "name": "Жим Паллофа с резиной",
+    "nameEn": "Pallof Press",
+    "category": "core",
+    "categoryName": "Кор",
+    "targetMuscles": [
+      "Косые мышцы живота",
+      "Поперечная мышца живота"
+    ],
+    "gear": [
+      "band"
+    ],
+    "goals": [
+      "beginner",
+      "mass"
+    ],
+    "instructions": {
+      "initial": "Встаньте боком к двери, резина закреплена на уровне груди, рукоять у груди.",
+      "eccentric": "Плавно верните руки к груди.",
+      "concentric": "Выжмите руки вперёд, не давая корпусу повернуться к двери.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Разворачивать таз и плечи за резиной."
+    }
+  },
+  {
+    "id": "ex_hiit_bike",
+    "name": "Интервалы на велотренажёре",
+    "nameEn": "Bike Intervals",
+    "category": "cardio",
+    "categoryName": "Кардио",
+    "targetMuscles": [
+      "Квадрицепс",
+      "Ягодицы",
+      "Сердце и лёгкие"
+    ],
+    "gear": [
+      "machine"
+    ],
+    "goals": [
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Настройте сиденье: колено чуть согнуто в нижней точке. Разомнитесь 3–5 минут.",
+      "eccentric": "Отдых: 60–90 секунд легко.",
+      "concentric": "Работа: 30 секунд в полную силу.",
+      "breathing": "Дышите свободно, на ускорении глубже.",
+      "mistakes": "Держать среднюю скорость вместо чётких ускорений."
+    },
+    "timed": true,
+    "evidence": {
+      "level": "review",
+      "text": "Интервалы снижают жир так же, как ровное кардио, но требуют примерно на 40% меньше времени.",
+      "sources": [
+        "wewege"
+      ]
+    }
+  },
+  {
+    "id": "ex_incline_walk",
+    "name": "Ходьба в гору",
+    "nameEn": "Incline Walk",
+    "category": "cardio",
+    "categoryName": "Кардио",
+    "targetMuscles": [
+      "Ягодицы",
+      "Икры",
+      "Сердце и лёгкие"
+    ],
+    "gear": [
+      "machine",
+      "none"
+    ],
+    "goals": [
+      "fat",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Наклон 6–12%, скорость такая, чтобы можно было говорить.",
+      "eccentric": "Держите темп всё время.",
+      "concentric": "Отталкивайтесь всей стопой, не держитесь за поручни.",
+      "breathing": "Ровное дыхание, разговорный темп.",
+      "mistakes": "Висеть на поручнях и сутулиться."
+    },
+    "timed": true,
+    "evidence": {
+      "level": "review",
+      "text": "Ровное кардио снижает жир так же, как интервалы, и меньше утомляет перед силовой.",
+      "sources": [
+        "wewege"
+      ]
+    }
+  },
+  {
+    "id": "ex_burpee",
+    "name": "Бёрпи",
+    "nameEn": "Burpee",
+    "category": "cardio",
+    "categoryName": "Кардио",
+    "targetMuscles": [
+      "Всё тело",
+      "Сердце и лёгкие"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Встаньте прямо, стопы на ширине плеч.",
+      "eccentric": "Присядьте, поставьте руки на пол и выпрыгните в упор лёжа.",
+      "concentric": "Подтяните ноги к рукам и выпрыгните вверх.",
+      "breathing": "Вдох на расслаблении, выдох на усилии.",
+      "mistakes": "Провисать в пояснице в упоре лёжа."
+    }
+  },
+  {
+    "id": "ex_jump_rope",
+    "name": "Скакалка",
+    "nameEn": "Jump Rope",
+    "category": "cardio",
+    "categoryName": "Кардио",
+    "targetMuscles": [
+      "Икры",
+      "Сердце и лёгкие"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "fat",
+      "beginner"
+    ],
+    "instructions": {
+      "initial": "Локти у корпуса, кисти на уровне бёдер.",
+      "eccentric": "Мягко приземляйтесь на переднюю часть стопы.",
+      "concentric": "Вращайте скакалку кистями, прыгайте невысоко.",
+      "breathing": "Ровное дыхание через нос и рот.",
+      "mistakes": "Прыгать высоко и крутить всеми руками."
+    },
+    "timed": true
+  },
+  {
+    "id": "ex_mountain_climbers",
+    "name": "Скалолаз",
+    "nameEn": "Mountain Climbers",
+    "category": "cardio",
+    "categoryName": "Кардио",
+    "targetMuscles": [
+      "Мышцы живота",
+      "Сгибатели бедра",
+      "Плечи"
+    ],
+    "gear": [
+      "none"
+    ],
+    "goals": [
+      "fat"
+    ],
+    "instructions": {
+      "initial": "Примите упор лёжа на прямых руках.",
+      "eccentric": "Верните ногу назад, одновременно подтягивая другую.",
+      "concentric": "Быстро подтягивайте колени к груди по очереди.",
+      "breathing": "Короткий выдох на каждое движение.",
+      "mistakes": "Поднимать таз вверх."
+    },
+    "timed": true
   }
 ];

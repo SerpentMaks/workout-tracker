@@ -1,14 +1,13 @@
 // BentoFit Service Worker - Offline First
-const CACHE_NAME = 'bentofit-cache-v3';
+const CACHE_NAME = 'bentofit-cache-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './css/themes.css',
-  './css/bento.css',
-  './css/ios.css',
-  './css/design-system.css',
+  './css/app.css',
   './js/exercises-data.js',
+  './js/programs-data.js',
+  './js/figures.js',
   './js/storage.js',
   './js/audio.js',
   './js/timer.js',
@@ -49,6 +48,12 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).then((networkResponse) => {
+        // Keep Google Fonts for offline use after the first load
+        const url = new URL(event.request.url);
+        if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+          const copy = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
         return networkResponse;
       }).catch(() => {
         // Fallback for navigation requests

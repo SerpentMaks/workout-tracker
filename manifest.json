@@ -1,12 +1,12 @@
 {
   "name": "BentoFit — Трекер Тренировок",
   "short_name": "BentoFit",
-  "description": "Элегантный PWA трекер тренировок в стиле Bento Grid для iPhone",
+  "description": "Трекер тренировок с готовыми программами и техникой упражнений",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0d14",
-  "theme_color": "#0a0d14",
+  "background_color": "#1d1f23",
+  "theme_color": "#1d1f23",
   "scope": "./",
   "icons": [
     {

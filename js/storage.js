@@ -14,162 +14,27 @@
     unit: 'kg', // 'kg' or 'lbs'
     weeklyGoal: 3, // 1 to 14
     defaultRestSeconds: 90, // 15 to 600
-    theme: 'dark', // 'dark' or 'light'
-    uiStyle: 'bento', // 'bento' or 'metamorphism'
-    accent: 'violet', // 'violet', 'cyan', 'emerald', 'coral', 'rose', 'amber'
+    theme: 'dark', // 'dark', 'light' or 'system'
+    accent: 'amber', // plate colour: 'amber', 'coral', 'cyan', 'emerald', 'white'
     soundEnabled: true,
     vibrationEnabled: true,
   };
 
-  const DEFAULT_TEMPLATES = [
-    {
-      id: 'tpl_push',
-      name: 'Push: Грудь, Плечи и Трицепс',
-      description: 'Базовая силовая программа для жимовых мышечных групп.',
-      exercises: [
-        {
-          exerciseId: 'ex_bench_press',
-          targetSets: 4,
-          targetWeight: 70,
-          targetReps: 8,
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 10 повт',
-        },
-        {
-          exerciseId: 'ex_incline_db_press',
-          targetSets: 3,
-          targetWeight: 24,
-          targetReps: 10,
-          progressionWeight: '+1-2 кг',
-          progressionReps: 'до 12 повт',
-        },
-        {
-          exerciseId: 'ex_overhead_press',
-          targetSets: 3,
-          targetWeight: 45,
-          targetReps: 8,
-          progressionWeight: '+1.5 кг',
-          progressionReps: 'до 10 повт',
-        },
-        {
-          exerciseId: 'ex_lateral_raises',
-          targetSets: 3,
-          targetWeight: 10,
-          targetReps: 12,
-          progressionWeight: '+0.5 кг',
-          progressionReps: 'до 15 повт',
-        },
-        {
-          exerciseId: 'ex_tricep_pushdown',
-          targetSets: 3,
-          targetWeight: 30,
-          targetReps: 12,
-          progressionWeight: '+2 кг',
-          progressionReps: 'до 14 повт',
-        },
-      ],
-    },
-    {
-      id: 'tpl_pull',
-      name: 'Pull: Спина, Задняя дельта и Бицепс',
-      description: 'Тяговая тренировка для развития толщины и ширины спины.',
-      exercises: [
-        {
-          exerciseId: 'ex_deadlift',
-          targetSets: 3,
-          targetWeight: 100,
-          targetReps: 6,
-          progressionWeight: '+5 кг',
-          progressionReps: 'до 8 повт',
-        },
-        {
-          exerciseId: 'ex_pullups',
-          targetSets: 4,
-          targetWeight: 0,
-          targetReps: 8,
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 10 повт',
-        },
-        {
-          exerciseId: 'ex_barbell_row',
-          targetSets: 3,
-          targetWeight: 65,
-          targetReps: 10,
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 12 повт',
-        },
-        {
-          exerciseId: 'ex_rear_delt_flyes',
-          targetSets: 3,
-          targetWeight: 12,
-          targetReps: 12,
-          progressionWeight: '+1 кг',
-          progressionReps: 'до 15 повт',
-        },
-        {
-          exerciseId: 'ex_barbell_curl',
-          targetSets: 3,
-          targetWeight: 35,
-          targetReps: 10,
-          progressionWeight: '+1.5 кг',
-          progressionReps: 'до 12 повт',
-        },
-      ],
-    },
-    {
-      id: 'tpl_legs_core',
-      name: 'Legs & Core: Ноги и Мышцы кора',
-      description: 'Интенсивный день нижней части тела и стабилизаторов корпуса.',
-      exercises: [
-        {
-          exerciseId: 'ex_squat',
-          targetSets: 4,
-          targetWeight: 85,
-          targetReps: 8,
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 10 повт',
-        },
-        {
-          exerciseId: 'ex_romanian_deadlift',
-          targetSets: 3,
-          targetWeight: 75,
-          targetReps: 10,
-          progressionWeight: '+2.5 кг',
-          progressionReps: 'до 12 повт',
-        },
-        {
-          exerciseId: 'ex_leg_press',
-          targetSets: 3,
-          targetWeight: 150,
-          targetReps: 10,
-          progressionWeight: '+5 кг',
-          progressionReps: 'до 12 повт',
-        },
-        {
-          exerciseId: 'ex_hanging_leg_raises',
-          targetSets: 3,
-          targetWeight: 0,
-          targetReps: 12,
-          progressionWeight: 'без веса',
-          progressionReps: 'до 15 повт',
-        },
-        {
-          exerciseId: 'ex_plank',
-          targetSets: 3,
-          targetWeight: 0,
-          targetReps: 60,
-          progressionWeight: '+10 сек',
-          progressionReps: 'до 90 сек',
-        },
-      ],
-    },
-  ];
+  // Accent colours from before the plate palette
+  const LEGACY_ACCENTS = { violet: 'amber', rose: 'coral' };
 
-  const DEFAULT_SCHEDULE = {
-    startDate: '2026-10-01',
-    intervalDays: 1, // days of rest between workouts (or sequence)
-    sequence: ['tpl_push', 'REST', 'tpl_pull', 'REST', 'tpl_legs_core', 'REST', 'REST'],
-  };
+  function defaultSchedule() {
+    const now = new Date();
+    const program = (window.BENTO_LIBRARY.programs || []).find((p) => p.id === 'prog_upper_lower');
+    return {
+      startDate: `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`,
+      intervalDays: 1,
+      sequence: program ? program.sequence.slice() : ['REST'],
+      programId: program ? program.id : null,
+    };
+  }
+
+  let exerciseCache = { raw: undefined, list: null };
 
   const DEFAULT_METRICS = {
     height: 178, // cm
@@ -201,13 +66,29 @@
     },
 
     // Exercises
+    // Built-in exercises always come from the app so text and drawings stay current;
+    // only exercises the user added are read from storage.
     getExercises: function () {
-      let exs = this.get(STORAGE_KEYS.EXERCISES, null);
-      if (!exs || !Array.isArray(exs) || exs.length === 0) {
-        exs = window.DEFAULT_EXERCISES || [];
-        this.set(STORAGE_KEYS.EXERCISES, exs);
+      let raw = null;
+      try {
+        raw = localStorage.getItem(STORAGE_KEYS.EXERCISES);
+      } catch (e) {
+        console.error('Error reading exercises', e);
       }
-      return exs;
+      if (exerciseCache.list && exerciseCache.raw === raw) return exerciseCache.list;
+
+      const defaults = window.DEFAULT_EXERCISES || [];
+      const builtInIds = new Set(defaults.map((e) => e.id));
+      let stored = [];
+      try {
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(parsed)) stored = parsed;
+      } catch (e) {
+        console.error('Error parsing exercises', e);
+      }
+      const list = defaults.concat(stored.filter((e) => e && !builtInIds.has(e.id)));
+      exerciseCache = { raw: raw, list: list };
+      return list;
     },
     saveExercises: function (exercises) {
       return this.set(STORAGE_KEYS.EXERCISES, exercises);
@@ -232,20 +113,21 @@
     },
 
     // Templates
+    // Saved by the user. A library day edited by the user is saved here under the same id and wins over the original.
     getTemplates: function () {
-      let tpls = this.get(STORAGE_KEYS.TEMPLATES, null);
-      if (!tpls || !Array.isArray(tpls) || tpls.length === 0) {
-        tpls = DEFAULT_TEMPLATES;
-        this.set(STORAGE_KEYS.TEMPLATES, tpls);
-      }
-      return tpls;
+      const tpls = this.get(STORAGE_KEYS.TEMPLATES, []);
+      return Array.isArray(tpls) ? tpls : [];
+    },
+    getAllTemplates: function () {
+      const mine = this.getTemplates();
+      const mineIds = new Set(mine.map((t) => t.id));
+      return mine.concat(window.BENTO_LIBRARY.templates.filter((t) => !mineIds.has(t.id)));
     },
     saveTemplates: function (templates) {
       return this.set(STORAGE_KEYS.TEMPLATES, templates);
     },
     getTemplateById: function (id) {
-      const all = this.getTemplates();
-      return all.find((t) => t.id === id) || null;
+      return this.getAllTemplates().find((t) => t.id === id) || null;
     },
     saveTemplate: function (template) {
       const all = this.getTemplates();
@@ -266,7 +148,7 @@
     getSchedule: function () {
       let sched = this.get(STORAGE_KEYS.SCHEDULE, null);
       if (!sched) {
-        sched = DEFAULT_SCHEDULE;
+        sched = defaultSchedule();
         this.set(STORAGE_KEYS.SCHEDULE, sched);
       }
       return sched;
@@ -416,7 +298,9 @@
     // Settings
     getSettings: function () {
       const s = this.get(STORAGE_KEYS.SETTINGS, {});
-      return Object.assign({}, DEFAULT_SETTINGS, s);
+      const merged = Object.assign({}, DEFAULT_SETTINGS, s);
+      merged.accent = LEGACY_ACCENTS[merged.accent] || merged.accent;
+      return merged;
     },
     saveSettings: function (settings) {
       const current = this.getSettings();
