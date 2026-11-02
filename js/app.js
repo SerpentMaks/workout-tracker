@@ -1876,7 +1876,7 @@
       const top = parseInt(getComputedStyle(probe).paddingTop, 10) || 0;
       probe.remove();
       const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      el.textContent = `Версия 6. ${standalone ? 'С экрана «Домой»' : 'В браузере'}: экран ${window.screen.width}×${window.screen.height}, окно ${window.innerWidth}×${window.innerHeight}, отступ сверху ${top}, снизу ${parseInt(styles.paddingBottom, 10) || 0}.`;
+      el.textContent = `Версия 7. ${standalone ? 'С экрана «Домой»' : 'В браузере'}: экран ${window.screen.width}×${window.screen.height}, окно ${window.innerWidth}×${window.innerHeight}, отступ сверху ${top}, снизу ${parseInt(styles.paddingBottom, 10) || 0}.`;
     },
 
     renderProfile: function () {
