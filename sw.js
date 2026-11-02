@@ -1,5 +1,5 @@
 // BentoFit Service Worker - Offline First
-const CACHE_NAME = 'bentofit-cache-v5';
+const CACHE_NAME = 'bentofit-cache-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

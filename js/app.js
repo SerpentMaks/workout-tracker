@@ -1865,7 +1865,22 @@
     // ----------------------------------------------------
     // 7. PROFILE, BODY METRICS & SETTINGS
     // ----------------------------------------------------
+    // Version and real screen numbers, for checking layout problems on the phone itself
+    renderDiagnostics: function () {
+      const el = document.getElementById('app-diagnostics');
+      if (!el) return;
+      const styles = getComputedStyle(document.querySelector('.bottom-tab-bar'));
+      const probe = document.createElement('div');
+      probe.style.cssText = 'position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top);';
+      document.body.appendChild(probe);
+      const top = parseInt(getComputedStyle(probe).paddingTop, 10) || 0;
+      probe.remove();
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      el.textContent = `Версия 6. ${standalone ? 'С экрана «Домой»' : 'В браузере'}: экран ${window.screen.width}×${window.screen.height}, окно ${window.innerWidth}×${window.innerHeight}, отступ сверху ${top}, снизу ${parseInt(styles.paddingBottom, 10) || 0}.`;
+    },
+
     renderProfile: function () {
+      this.renderDiagnostics();
       const metrics = window.BentoStorage.getBodyMetrics();
       const settings = window.BentoStorage.getSettings();
       const unit = settings.unit || 'kg';
