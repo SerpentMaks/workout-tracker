@@ -7,7 +7,8 @@
 
   <!-- iOS PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Not black-translucent: on iOS 26 it shortens the installed app by the status bar height and blurs the top of the page -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="BentoFit">
   <meta name="theme-color" content="#1d1f23">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -32,12 +33,6 @@
       } catch (error) {
         document.documentElement.dataset.theme = 'dark';
       }
-      function setAppHeight() {
-        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
-      }
-      setAppHeight();
-      window.addEventListener('resize', setAppHeight);
-      window.addEventListener('orientationchange', setAppHeight);
     })();
   </script>
 </head>

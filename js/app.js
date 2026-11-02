@@ -19,9 +19,6 @@
 
   window.BentoApp = {
     init: function () {
-      this.updateAppHeight();
-      window.addEventListener('resize', () => this.updateAppHeight());
-      window.addEventListener('orientationchange', () => this.updateAppHeight());
       if (window.matchMedia) {
         const scheme = window.matchMedia('(prefers-color-scheme: dark)');
         scheme.addEventListener('change', () => {
@@ -55,11 +52,6 @@
       if (AppState.activeWorkout) {
         this.showToast('Возобновлена активная тренировка', 'info');
       }
-    },
-
-    updateAppHeight: function () {
-      const vh = window.innerHeight;
-      document.documentElement.style.setProperty('--app-height', vh + 'px');
     },
 
     // ----------------------------------------------------

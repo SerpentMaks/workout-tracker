@@ -68,7 +68,7 @@
 :root[data-theme="light"][data-accent="white"] { --accent: #1d1f23; --on-accent: #f4f4f1; --accent-text: #1d1f23; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; background: var(--bg); overscroll-behavior: none; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); overscroll-behavior: none; }
 body { font: 400 15px/1.45 var(--font-body); color: var(--ink); -webkit-text-size-adjust: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { background: none; border: 0; cursor: pointer; touch-action: manipulation; }
@@ -78,7 +78,13 @@ a { color: var(--accent-text); }
 [hidden] { display: none !important; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-#app-root { position: fixed; inset: 0; height: var(--app-height, 100%); display: flex; flex-direction: column; max-width: 560px; margin: 0 auto; background: var(--bg); overflow: hidden; }
+#app-root { position: fixed; inset: 0; display: flex; flex-direction: column; max-width: 560px; margin: 0 auto; background: var(--bg); overflow: hidden; }
+
+/* Installed on iOS: window.innerHeight and 100% can be short by the status bar height.
+   Icons added before the status bar style changed still run in that mode, so size from the screen. */
+@media (display-mode: standalone) {
+  #app-root { bottom: auto; height: min(100lvh, calc(100% + var(--safe-t))); }
+}
 
 /* ---------- Header & tabs ---------- */
 .app-header { flex: none; display: flex; justify-content: space-between; align-items: center; padding: calc(var(--safe-t) + 8px) 16px 6px; }
